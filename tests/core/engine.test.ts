@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { GameEngine } from '../../src/engine/core/engine';
 import { System } from '../../src/engine/core/system';
 import { Component } from '../../src/engine/core/component';
@@ -57,9 +57,6 @@ class TestComponent extends Component {
 describe('GameEngine', () => {
     beforeEach(() => {
         resetEntityIdCounter();
-        vi.stubGlobal('performance', { now: () => 0 });
-        vi.stubGlobal('requestAnimationFrame', vi.fn());
-        vi.stubGlobal('cancelAnimationFrame', vi.fn());
     });
 
     describe('entity management', () => {
@@ -109,8 +106,8 @@ describe('GameEngine', () => {
             engine.registerSystem(new HighPrioritySystem(order));
 
             engine.start();
-            engine.manualTick(0);
-            engine.manualTick(16.67);
+            engine.tick(0);
+            engine.tick(16.67);
             engine.stop();
 
             expect(order[0]).toBe('high');
@@ -124,8 +121,8 @@ describe('GameEngine', () => {
             engine.registerSystem(system);
 
             engine.start();
-            engine.manualTick(0);
-            engine.manualTick(16.67);
+            engine.tick(0);
+            engine.tick(16.67);
             engine.stop();
 
             expect(system.updateCount).toBe(0);
@@ -179,8 +176,8 @@ describe('GameEngine', () => {
             const comp = entity.addComponent(new TestComponent());
 
             engine.start();
-            engine.manualTick(0);
-            engine.manualTick(16.67);
+            engine.tick(0);
+            engine.tick(16.67);
             engine.stop();
 
             expect(comp.updateCount).toBe(2);

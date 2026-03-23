@@ -127,5 +127,8 @@ for (let i = 0; i < 5; i++) {
 }
 
 game.start();
-babylonEngine.runRenderLoop(() => scene.render());
+babylonEngine.runRenderLoop(() => {
+    game.tick(performance.now());
+    scene.render();
+});
 window.addEventListener('resize', () => babylonEngine.resize());

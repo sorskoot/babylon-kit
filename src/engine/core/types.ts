@@ -225,6 +225,15 @@ export interface IGameEngine {
     pause(): void;
     /** Resume the game loop after a pause. */
     resume(): void;
+    /**
+     * Advance the engine by one frame.
+     *
+     * Call this once per frame from an external loop such as Babylon.js's
+     * `engine.runRenderLoop()`.
+     *
+     * @param timestamp - A `performance.now()`-style timestamp in milliseconds.
+     */
+    tick(timestamp: number): void;
 }
 
 /**

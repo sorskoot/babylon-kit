@@ -22,6 +22,11 @@ const DEFAULT_CONFIG: EngineConfig = {
  * the {@link GameLoop}.
  *
  * @remarks
+ * The engine does **not** run its own `requestAnimationFrame` loop. Instead,
+ * call {@link GameEngine.tick | tick()} once per frame from an external source
+ * — typically Babylon.js's `engine.runRenderLoop()`. This ensures the game
+ * engine stays synchronised with Babylon.js's rendering cadence.
+ *
  * Systems are executed in ascending {@link ISystem.priority | priority} order.
  * Services are stored in a generic map for lightweight dependency injection.
  *
@@ -30,6 +35,11 @@ const DEFAULT_CONFIG: EngineConfig = {
  * const engine = new GameEngine({ canvasId: "renderCanvas" });
  * engine.registerSystem(new MovementSystem());
  * engine.start();
+ *
+ * babylonEngine.runRenderLoop(() => {
+ *     engine.tick(performance.now());
+ *     scene.render();
+ * });
  * ```
  */
 export class GameEngine implements IGameEngine {
@@ -136,13 +146,14 @@ export class GameEngine implements IGameEngine {
     }
 
     /**
-     * Manually advance the loop by one frame.
+     * Advance the engine by one frame.
      *
-     * Useful in tests where `requestAnimationFrame` is not available.
+     * Call this once per frame from an external loop such as Babylon.js's
+     * `engine.runRenderLoop()`.
      *
      * @param timestamp - A `performance.now()`-style timestamp in milliseconds.
      */
-    manualTick(timestamp: number): void {
+    tick(timestamp: number): void {
         this._loop.tick(timestamp);
     }
 

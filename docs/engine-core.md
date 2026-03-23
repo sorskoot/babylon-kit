@@ -28,16 +28,27 @@ const game = new GameEngine({
 
 ### Lifecycle
 
+The engine does **not** run its own `requestAnimationFrame` loop. Call `tick()`
+once per frame from an external source — typically Babylon.js's
+`engine.runRenderLoop()`.
+
 ```typescript
-game.start();   // Begin the game loop
-game.pause();   // Pause (systems stop updating, render continues)
+game.start();   // Enable the loop (tick calls will now be processed)
+game.pause();   // Pause (systems stop updating, render callback still fires)
 game.resume();  // Resume from pause
-game.stop();    // Stop the game loop entirely
+game.stop();    // Disable the loop (tick calls are ignored)
+
+// Drive the engine from Babylon.js's render loop:
+babylonEngine.runRenderLoop(() => {
+    game.tick(performance.now());
+    scene.render();
+});
 ```
 
 ## Game Loop
 
-The loop runs three phases each frame:
+The loop is driven externally — call `game.tick(timestamp)` once per frame from
+Babylon.js's `engine.runRenderLoop()`. Each tick runs three phases:
 
 1. **Fixed Update** — Called at a fixed interval for deterministic physics/gameplay
 2. **Update** — Called once per frame with variable delta

@@ -2,20 +2,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GameLoop } from '../../src/engine/core/loop';
 
 describe('GameLoop', () => {
-    let onUpdate: ReturnType<typeof vi.fn>;
-    let onFixedUpdate: ReturnType<typeof vi.fn>;
-    let onRender: ReturnType<typeof vi.fn>;
+    let onUpdate: ReturnType<typeof vi.fn<(delta:number)=>void>>;
+    let onFixedUpdate: ReturnType<typeof vi.fn<(delta:number)=>void>>;
+    let onRender: ReturnType<typeof vi.fn<()=>void>>;
     let loop: GameLoop;
 
     beforeEach(() => {
-        onUpdate = vi.fn();
-        onFixedUpdate = vi.fn();
-        onRender = vi.fn();
+        onUpdate = vi.fn<(delta:number)=>void>();
+        onFixedUpdate = vi.fn<(delta:number)=>void>();
+        onRender = vi.fn<()=>void>();
         loop = new GameLoop(onUpdate, onFixedUpdate, onRender, 1 / 60);
-
-        vi.stubGlobal('performance', { now: () => 0 });
-        vi.stubGlobal('requestAnimationFrame', vi.fn());
-        vi.stubGlobal('cancelAnimationFrame', vi.fn());
     });
 
     it('starts in stopped state', () => {
@@ -37,6 +33,13 @@ describe('GameLoop', () => {
         loop.start();
         loop.start();
         expect(loop.running).toBe(true);
+    });
+
+    it('ignores tick when not running', () => {
+        loop.tick(0);
+        loop.tick(16.67);
+        expect(onUpdate).not.toHaveBeenCalled();
+        expect(onRender).not.toHaveBeenCalled();
     });
 
     describe('tick', () => {
@@ -73,14 +76,27 @@ describe('GameLoop', () => {
             expect(onUpdate.mock.calls.length).toBe(callsBefore);
         });
 
-        it('resumes after pause', () => {
+        it('still calls onRender when paused', () => {
             loop.start();
             loop.tick(0);
             loop.pause();
+            onRender.mockClear();
             loop.tick(16.67);
+            expect(onRender).toHaveBeenCalledTimes(1);
+        });
+
+        it('resumes after pause without a delta spike', () => {
+            loop.start();
+            loop.tick(0);
+            loop.pause();
+            loop.tick(500); // large gap while paused
             loop.resume();
-            loop.tick(33.34);
-            expect(onUpdate).toHaveBeenCalled();
+            onUpdate.mockClear();
+            loop.tick(516.67); // first tick after resume
+            expect(onUpdate).toHaveBeenCalledTimes(1);
+            const delta = onUpdate.mock.calls[0][0];
+            // Should NOT see the 500ms gap — timestamp resets on resume
+            expect(delta).toBeLessThanOrEqual(0.25);
         });
     });
 

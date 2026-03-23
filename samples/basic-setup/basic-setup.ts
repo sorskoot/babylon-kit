@@ -62,6 +62,9 @@ box.addComponent(new RotateComponent());
 
 // Start both engines
 game.start();
-babylonEngine.runRenderLoop(() => scene.render());
+babylonEngine.runRenderLoop(() => {
+    game.tick(performance.now());
+    scene.render();
+});
 
 window.addEventListener('resize', () => babylonEngine.resize());
