@@ -13,6 +13,7 @@ npm run dev
 import { GameEngine, Component, System } from "./src/engine";
 
 const game = new GameEngine({ debug: true });
+await game.initialize(); // canvas, scene, camera, light, WebXR — all automatic
 
 class Health extends Component {
     hp = 100;
@@ -27,8 +28,12 @@ game.registerSystem(new DamageSystem());
 const player = game.createEntity("Player");
 player.addComponent(new Health());
 
-game.start();
+game.start(); // render loop starts automatically
 ```
+
+No need to manually set up the Babylon.js engine, scene, camera, lights, render
+loop, or WebXR — `GameEngine` handles it all. Just create your systems and
+components and call `start()`.
 
 ## Architecture
 

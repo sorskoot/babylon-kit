@@ -183,4 +183,86 @@ describe('GameEngine', () => {
             expect(comp.updateCount).toBe(2);
         });
     });
+
+    describe('Babylon.js integration', () => {
+        it('is not initialized by default', () => {
+            const engine = new GameEngine();
+            expect(engine.initialized).toBe(false);
+        });
+
+        it('has undefined Babylon properties before initialize', () => {
+            const engine = new GameEngine();
+            expect(engine.babylonEngine).toBeUndefined();
+            expect(engine.scene).toBeUndefined();
+            expect(engine.canvas).toBeUndefined();
+            expect(engine.xr).toBeUndefined();
+        });
+
+        it('still works without initialize (ECS-only mode)', () => {
+            const engine = new GameEngine();
+            const system = new CounterSystem();
+            engine.registerSystem(system);
+
+            engine.start();
+            engine.tick(0);
+            engine.tick(16.67);
+            engine.stop();
+
+            expect(system.updateCount).toBeGreaterThan(0);
+        });
+    });
+
+    describe('config defaults', () => {
+        it('defaults webXR to true', () => {
+            const engine = new GameEngine();
+            expect(engine.config.webXR).toBe(true);
+        });
+
+        it('defaults createDefaultCamera to true', () => {
+            const engine = new GameEngine();
+            expect(engine.config.createDefaultCamera).toBe(true);
+        });
+
+        it('defaults createDefaultLight to true', () => {
+            const engine = new GameEngine();
+            expect(engine.config.createDefaultLight).toBe(true);
+        });
+
+        it('allows overriding new config options', () => {
+            const engine = new GameEngine({
+                webXR: false,
+                createDefaultCamera: false,
+                createDefaultLight: false,
+            });
+            expect(engine.config.webXR).toBe(false);
+            expect(engine.config.createDefaultCamera).toBe(false);
+            expect(engine.config.createDefaultLight).toBe(false);
+        });
+    });
+
+    describe('dispose', () => {
+        it('can be called without initialize', () => {
+            const engine = new GameEngine();
+            expect(() => engine.dispose()).not.toThrow();
+        });
+
+        it('stops the loop on dispose', () => {
+            const engine = new GameEngine();
+            const system = new CounterSystem();
+            engine.registerSystem(system);
+            engine.start();
+            engine.dispose();
+
+            const before = system.updateCount;
+            engine.tick(100);
+            expect(system.updateCount).toBe(before);
+        });
+
+        it('resets initialized flag on dispose', () => {
+            const engine = new GameEngine();
+            // Without calling initialize, initialized is false
+            engine.dispose();
+            expect(engine.initialized).toBe(false);
+        });
+    });
 });

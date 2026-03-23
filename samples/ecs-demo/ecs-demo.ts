@@ -1,8 +1,4 @@
 import {
-    Engine,
-    Scene,
-    FreeCamera,
-    HemisphericLight,
     MeshBuilder,
     Vector3,
     AbstractMesh,
@@ -95,22 +91,15 @@ class BobberSystem extends System {
 }
 
 // --- Bootstrap ---
-const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;
-const babylonEngine = new Engine(canvas, true);
-const scene = new Scene(babylonEngine);
-
-new FreeCamera('camera', new Vector3(0, 3, -8), scene).setTarget(
-    Vector3.Zero(),
-);
-new HemisphericLight('light', new Vector3(0, 1, 0), scene);
-
 const game = new GameEngine();
+await game.initialize();
+
 game.registerSystem(new SpinnerSystem());
 game.registerSystem(new BobberSystem());
 
 // Spawn entities
 for (let i = 0; i < 5; i++) {
-    const mesh = MeshBuilder.CreateBox(`box_${i}`, { size: 0.8 }, scene);
+    const mesh = MeshBuilder.CreateBox(`box_${i}`, { size: 0.8 }, game.scene);
     mesh.position.x = (i - 2) * 1.5;
     mesh.position.y = 1;
 
@@ -127,8 +116,3 @@ for (let i = 0; i < 5; i++) {
 }
 
 game.start();
-babylonEngine.runRenderLoop(() => {
-    game.tick(performance.now());
-    scene.render();
-});
-window.addEventListener('resize', () => babylonEngine.resize());

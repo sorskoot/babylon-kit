@@ -1,25 +1,16 @@
-import {
-    Engine,
-    Scene,
-    FreeCamera,
-    HemisphericLight,
-    MeshBuilder,
-    Vector3,
-} from '@babylonjs/core';
-import { GameEngine, InputSystem } from '../../src/engine';
+import { MeshBuilder } from '@babylonjs/core';
+import { GameEngine, InputSystem, System } from '../../src/engine';
+import type { IGameEngine } from '../../src/engine/core/types';
 
-const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;
-const babylonEngine = new Engine(canvas, true);
-const scene = new Scene(babylonEngine);
+// --- Game engine setup ---
+const game = new GameEngine({ debug: true, webXR: false });
+await game.initialize();
 
-const camera = new FreeCamera('camera', new Vector3(0, 2, -5), scene);
-camera.setTarget(Vector3.Zero());
-const light = new HemisphericLight('light', new Vector3(0, 1, 0), scene);
-const box = MeshBuilder.CreateBox('box', { size: 1 }, scene);
+const box = MeshBuilder.CreateBox('box', { size: 1 }, game.scene);
 
 // --- Input setup ---
 const input = new InputSystem();
-input.attach(canvas);
+input.attach(game.canvas!);
 
 input.registerAction({
     name: 'moveForward',
@@ -42,29 +33,38 @@ input.registerAction({
     bindings: [{ type: 'keyboard', code: 'Space' }],
 });
 
-// --- Game engine ---
-const game = new GameEngine({ debug: true });
 game.registerService('input', input);
 
+// --- Movement system ---
 const speed = 3;
 
-babylonEngine.runRenderLoop(() => {
-    input.update();
+class MovementSystem extends System {
+    readonly name = 'movement';
+    private _engine!: GameEngine;
 
-    const fwd =
-        input.getActionValue('moveForward') + input.getActionValue('moveBack');
-    const strafe =
-        input.getActionValue('moveRight') + input.getActionValue('moveLeft');
-
-    const dt = babylonEngine.getDeltaTime() / 1000;
-    box.position.z += fwd * speed * dt;
-    box.position.x += strafe * speed * dt;
-
-    if (input.isActionPressed('jump')) {
-        console.log('Jump!');
+    override onRegister(engine: IGameEngine): void {
+        this._engine = engine as GameEngine;
     }
 
-    scene.render();
-});
+    update(delta: number): void {
+        const inp = this._engine.getService<InputSystem>('input')!;
+        inp.update();
 
-window.addEventListener('resize', () => babylonEngine.resize());
+        const fwd =
+            inp.getActionValue('moveForward') +
+            inp.getActionValue('moveBack');
+        const strafe =
+            inp.getActionValue('moveRight') +
+            inp.getActionValue('moveLeft');
+
+        box.position.z += fwd * speed * delta;
+        box.position.x += strafe * speed * delta;
+
+        if (inp.isActionPressed('jump')) {
+            console.log('Jump!');
+        }
+    }
+}
+
+game.registerSystem(new MovementSystem());
+game.start();

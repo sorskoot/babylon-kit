@@ -1,12 +1,6 @@
-import {
-    Engine,
-    Scene,
-    FreeCamera,
-    HemisphericLight,
-    MeshBuilder,
-    Vector3,
-} from '@babylonjs/core';
+import { MeshBuilder } from '@babylonjs/core';
 import { GameEngine, Component, System } from '../../src/engine';
+import type { IGameEngine } from '../../src/engine/core/types';
 
 // --- Components ---
 class RotateComponent extends Component {
@@ -22,9 +16,7 @@ class RotationSystem extends System {
         super(0);
     }
 
-    override onRegister(
-        engine: import('../../src/engine/core/types').IGameEngine,
-    ): void {
+    override onRegister(engine: IGameEngine): void {
         this._engine = engine as GameEngine;
     }
 
@@ -42,29 +34,16 @@ class RotationSystem extends System {
 }
 
 // --- Bootstrap ---
-const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;
-const babylonEngine = new Engine(canvas, true);
-const scene = new Scene(babylonEngine);
-
-const camera = new FreeCamera('camera', new Vector3(0, 2, -5), scene);
-camera.setTarget(Vector3.Zero());
-camera.attachControl(canvas, true);
-
-new HemisphericLight('light', new Vector3(0, 1, 0), scene);
-MeshBuilder.CreateBox('box', { size: 1 }, scene);
-
-// Game engine setup
 const game = new GameEngine({ debug: true });
+await game.initialize();
+
+// The scene, camera, light, and WebXR are already set up.
+// Just add a mesh to the auto-created Babylon.js scene:
+MeshBuilder.CreateBox('box', { size: 1 }, game.scene);
+
 game.registerSystem(new RotationSystem());
 
 const box = game.createEntity('Box');
 box.addComponent(new RotateComponent());
 
-// Start both engines
 game.start();
-babylonEngine.runRenderLoop(() => {
-    game.tick(performance.now());
-    scene.render();
-});
-
-window.addEventListener('resize', () => babylonEngine.resize());

@@ -1,3 +1,7 @@
+import type { Engine as BabylonEngine } from '@babylonjs/core/Engines/engine';
+import type { Scene } from '@babylonjs/core/scene';
+import type { WebXRDefaultExperience } from '@babylonjs/core/XR/webXRDefaultExperience';
+
 /**
  * Configuration options for the {@link IGameEngine}.
  *
@@ -12,7 +16,7 @@
  * ```
  */
 export interface EngineConfig {
-    /** ID of the `<canvas>` element to render into. */
+    /** ID of the `<canvas>` element to render into. @defaultValue `"renderCanvas"` */
     canvasId?: string;
     /** Direct reference to a canvas element (takes precedence over {@link canvasId}). */
     canvas?: HTMLCanvasElement;
@@ -28,6 +32,12 @@ export interface EngineConfig {
     debug?: boolean;
     /** Physics subsystem configuration. */
     physics?: PhysicsConfig;
+    /** Automatically create a WebXR experience on {@link IGameEngine.initialize | initialize()}. @defaultValue `true` */
+    webXR?: boolean;
+    /** Create a default camera during initialization. @defaultValue `true` */
+    createDefaultCamera?: boolean;
+    /** Create a default hemispheric light during initialization. @defaultValue `true` */
+    createDefaultLight?: boolean;
 }
 
 /**
@@ -171,8 +181,19 @@ export interface ISystem {
 /**
  * Top-level engine facade that ties together entities, systems, services,
  * and the game loop.
+ *
+ * Call {@link initialize} before {@link start} to set up the Babylon.js
+ * engine, scene, and (optionally) a WebXR experience.
  */
 export interface IGameEngine {
+    /** The Babylon.js rendering engine. Available after {@link initialize}. */
+    readonly babylonEngine?: BabylonEngine;
+    /** The active Babylon.js scene. Available after {@link initialize}. */
+    readonly scene?: Scene;
+    /** The canvas element used for rendering. Available after {@link initialize}. */
+    readonly canvas?: HTMLCanvasElement;
+    /** The WebXR experience helper. Available after {@link initialize} when WebXR is enabled. */
+    readonly xr?: WebXRDefaultExperience;
     /** Current timing state. */
     readonly time: TimeState;
     /** All living entities. */
@@ -226,10 +247,24 @@ export interface IGameEngine {
     /** Resume the game loop after a pause. */
     resume(): void;
     /**
+     * Initialize the Babylon.js engine, scene, default camera/light, and
+     * (optionally) a WebXR experience.
+     *
+     * Must be called **once** before {@link start}. Safe to call multiple
+     * times — subsequent calls are no-ops.
+     */
+    initialize(): Promise<void>;
+    /**
+     * Dispose of the Babylon.js engine, scene, and all associated resources.
+     */
+    dispose(): void;
+    /**
      * Advance the engine by one frame.
      *
-     * Call this once per frame from an external loop such as Babylon.js's
-     * `engine.runRenderLoop()`.
+     * @remarks
+     * When the engine has been {@link initialize | initialized}, the render
+     * loop calls this automatically. You only need to call it manually when
+     * running without Babylon.js (e.g. in tests).
      *
      * @param timestamp - A `performance.now()`-style timestamp in milliseconds.
      */
