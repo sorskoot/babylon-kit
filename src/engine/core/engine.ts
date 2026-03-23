@@ -1,15 +1,9 @@
-import type {
-    EngineConfig,
-    IEntity,
-    IGameEngine,
-    ISystem,
-    TimeState,
-} from './types';
-import type { Engine as BabylonEngine } from '@babylonjs/core/Engines/engine';
-import type { Scene } from '@babylonjs/core/scene';
-import type { WebXRDefaultExperience } from '@babylonjs/core/XR/webXRDefaultExperience';
-import { Entity } from './entity';
-import { GameLoop } from './loop';
+import type {EngineConfig, IEntity, IGameEngine, ISystem, TimeState,} from './types';
+import type {Engine as BabylonEngine} from '@babylonjs/core/Engines/engine';
+import type {Scene} from '@babylonjs/core/scene';
+import type {WebXRDefaultExperience} from '@babylonjs/core/XR/webXRDefaultExperience';
+import {Entity} from './entity';
+import {GameLoop} from './loop';
 
 /** Default engine configuration values. */
 const DEFAULT_CONFIG: EngineConfig = {
@@ -103,7 +97,7 @@ export class GameEngine implements IGameEngine {
 
     /** @param config - Partial configuration merged with {@link DEFAULT_CONFIG}. */
     constructor(config: Partial<EngineConfig> = {}) {
-        this._config = { ...DEFAULT_CONFIG, ...config };
+        this._config = {...DEFAULT_CONFIG, ...config};
 
         this._loop = new GameLoop(
             (delta) => this._update(delta),
@@ -194,6 +188,19 @@ export class GameEngine implements IGameEngine {
         window.addEventListener('resize', this._resizeHandler);
 
         this._initialized = true;
+
+        if (this._config.debug) {
+            if (this._config.debug) {
+                document.addEventListener("keydown", async (e) => {
+                    if (e.key === "i" && e.ctrlKey && e.altKey) {
+                        const {Inspector} = await import("@babylonjs/inspector");
+                        Inspector.Show(this._scene!, {});
+                        e.stopPropagation();
+                    }
+                });
+            }
+
+        }
     }
 
     // ──────────────────────── Canvas resolution ──────────────────────────────

@@ -42,7 +42,8 @@
     "dependencies": {
         "@babylonjs/core": "^8.56.1",
         "@babylonjs/gui": "^8.56.1",
-        "@babylonjs/loaders": "^8.56.1"
+        "@babylonjs/loaders": "^8.56.1",
+        "@babylonjs/inspector": "^8.56.1"
     },
     "devDependencies": {
         "typescript": "^5.9.3",
