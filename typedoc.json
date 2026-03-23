@@ -1,0 +1,15 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": ["src/engine/index.ts"],
+    "out": "docs-api",
+    "name": "BJS Game Engine",
+    "readme": "README.md",
+    "excludePrivate": true,
+    "excludeInternal": true,
+    "includeVersion": true,
+    "navigationLinks": {
+        "GitHub": "https://github.com/example/bjs-game-engine"
+    },
+    "plugin": [],
+    "tsconfig": "tsconfig.json"
+}
