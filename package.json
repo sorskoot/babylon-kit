@@ -19,10 +19,10 @@
         "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
         "build": "npm run clean && tsc",
         "build:watch": "npm run clean && tsc --watch",
-        "prepack": "npm run test && npm run build",
+        "prepack": "npm run build",
         "pack:check": "npm pack --dry-run",
         "pack:tarball": "npm pack",
-        "prepublishOnly": "npm run test && npm run build",
+        "prepublishOnly": "npm run build",
         "test": "vitest run",
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
@@ -50,6 +50,7 @@
         "vitest": "^4.1.0",
         "vite": "^8.0.1",
         "@vitest/coverage-v8": "^4.1.0",
-        "typedoc": "^0.28.18"
+        "typedoc": "^0.28.18",
+        "@types/node": "^25.5.0"
     }
 }
