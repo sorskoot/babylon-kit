@@ -3,7 +3,7 @@
 
 ---
 
-## 1. Vision & Philosophy
+## Vision & Philosophy
 
 ### Purpose  
 Create a lightweight, modular, opinionated engine layer on top of Babylon.js that provides the missing “game engine plumbing” found in Unity or Wonderland Engine, while staying web‑native and flexible. It should be VERY minimal to set up a new game and VERY simple to add assets and features. The goal is to enable rapid prototyping and development of 3D games in the browser without reinventing the wheel on rendering, physics, or asset management every time.
@@ -17,7 +17,7 @@ Create a lightweight, modular, opinionated engine layer on top of Babylon.js tha
 
 ---
 
-# ️ 2. High‑Level Architecture
+# ️ High‑Level Architecture
 
 ### Core Architectural Pillars
 - **Entity Component System (ECS)** or a simplified component model  
@@ -28,24 +28,24 @@ Create a lightweight, modular, opinionated engine layer on top of Babylon.js tha
 
 ---
 
-# 3. Development Roadmap (Recommended Order)
+# Development Roadmap (Recommended Order)
 
 ## Phase 1 — Foundations
 
-### 1. Engine Bootstrapper
+### Engine Bootstrapper
 - Engine initialization  
 - Scene creation & lifecycle  
 - Global configuration  
 - Debug flags  
 
-### 2. Game Loop
+### Game Loop
 - Fixed update  
 - Variable update  
 - Render step  
 - System ordering  
 - Time management (delta, time scale, pause)  
 
-### 3. Entity & Component System
+### Entity & Component System
 - Entity registry  
 - Component storage  
 - Component lifecycle (onAdd, onRemove, onUpdate)  
@@ -56,14 +56,14 @@ Create a lightweight, modular, opinionated engine layer on top of Babylon.js tha
 
 ## Phase 2 — Core Systems
 
-### 4. Input System
+### Input System
 - Keyboard  
 - Mouse  
 - Pointer events  
 - Gamepad  
 - Action mapping (Unity‑style Input Actions)  
 
-### 5. Asset Pipeline
+### Asset Pipeline
 - GLB/GLTF loading  
 - Texture loading  
 - Audio loading  
@@ -72,7 +72,7 @@ Create a lightweight, modular, opinionated engine layer on top of Babylon.js tha
 - Preloading & loading screens
 - CLI to bundle assets (CBOR?)
 
-### 6. Physics Integration
+### Physics Integration
 - Havok 
 - Physics world wrapper  
 - Collider components  
@@ -80,7 +80,7 @@ Create a lightweight, modular, opinionated engine layer on top of Babylon.js tha
 - Physics → transform sync  
 - Raycasting utilities  
 
-### 7. Animation System
+### Animation System
 - Animation component  
 - State machine (Animator‑like)  
 - Blend trees (optional)  
@@ -90,25 +90,25 @@ Create a lightweight, modular, opinionated engine layer on top of Babylon.js tha
 
 ## Phase 3 — Gameplay Layer
 
-### 8. Scene Management
+### Scene Management
 - Scene stack (push/pop)  
 - Transitions  
 - Persistent systems  
 - Additive scenes  
 
-### 9. UI Layer
+### UI Layer
 - Decide: Babylon GUI or HTML/CSS  
 - UI manager  
 - UI events → game events  
 - Responsive layout helpers  
 
-### 10. Audio System
+### Audio System
 - Sound component  
 - Audio groups / mixer  
 - Spatial audio  
 - Volume settings  
 
-### 11. Navigation & AI (optional)
+### Navigation & AI (optional)
 - Navmesh integration (Recast.js)  
 - Pathfinding service  
 - Behavior trees or state machines  
@@ -117,13 +117,13 @@ Create a lightweight, modular, opinionated engine layer on top of Babylon.js tha
 
 ## Phase 4 — Tools & Developer Experience
 
-### 12. Debug Tools
+### Debug Tools
 - On‑screen debug overlay  
 - FPS, memory, draw calls  
 - Entity/component inspector  
 - Hot‑reload for components  
 
-### 13. Editor (Long‑Term)
+### Editor (Long‑Term)
 - Scene editor (web‑based)  
 - Component inspector  
 - Prefab editor  
@@ -132,7 +132,7 @@ Create a lightweight, modular, opinionated engine layer on top of Babylon.js tha
 
 ---
 
-# 4. Subsystem Details
+# Subsystem Details
 
 ## ECS Design Notes
 - Keep components as pure data  
@@ -155,26 +155,7 @@ Order example:
 
 ---
 
-# 5. Testing Strategy
-
-### Unit Tests
-- Component creation  
-- System logic  
-- Utility functions  
-
-### Integration Tests
-- Physics + transform sync  
-- Input mapping  
-- Scene transitions  
-
-### Manual Testing Tools
-- Debug overlay  
-- Hot‑reload  
-- Logging utilities  
-
----
-
-# 6. Folder Structure (Proposed)
+# Folder Structure (Proposed)
 
 ```
 /engine
@@ -203,7 +184,7 @@ Order example:
 
 ---
 
-# 7. Future Extension Ideas
+# Future Extension Ideas
 
 - Multiplayer layer (WebRTC or Colyseus)  
 - Save/load system  
@@ -214,7 +195,7 @@ Order example:
 
 ---
 
-# 📘 8. Next Steps
+# Next Steps
 
 - create a template to quickly bootstrap a new game
   - vite + tiget  
