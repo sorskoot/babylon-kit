@@ -7,9 +7,6 @@
 ```bash
 npm run build          # clean + tsc (outputs to dist/)
 npm run build:watch    # incremental watch build
-npm test               # vitest single run (tests/ dir, node env)
-npm run test:watch     # vitest watch
-npm run test:coverage  # coverage via v8
 npm run docs           # typedoc → docs-api/
 npm run lint           # eslint src/
 ```
