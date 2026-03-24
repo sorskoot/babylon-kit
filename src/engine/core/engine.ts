@@ -10,6 +10,7 @@ import {DebugOverlay} from "../debug/debugOverlay";
 import {createEntityListServiceDefinition} from "../debug/EntityListServiceDefinition";
 import {MeshLoaderSystem} from "../systems/meshLoaderSystem";
 import {MaterialLoaderSystem} from "../systems/materialLoaderSystem";
+import {XRControllerSystem} from "../systems/xrControllerSystem";
 
 /** Default engine configuration values. */
 const DEFAULT_CONFIG: EngineConfig = {
@@ -202,6 +203,7 @@ export class GameEngine implements IGameEngine {
                 }
             }
 
+            this.registerSystem(new XRControllerSystem());
         }
         // Resize handling
         this._resizeHandler = () => this._babylonEngine?.resize();

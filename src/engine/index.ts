@@ -22,8 +22,10 @@ export { DebugOverlay } from './debug/debugOverlay';
 export { createEntityListServiceDefinition } from './debug/EntityListServiceDefinition';
 export { MeshComponent } from './components/meshComponent.js';
 export { MaterialComponent } from './components/materialComponent.js';
+export { XRControllerComponent } from './components/xrControllerComponent.js';
 export { MeshLoaderSystem } from './systems/meshLoaderSystem.js';
 export { MaterialLoaderSystem } from './systems/materialLoaderSystem.js';
+export { XRControllerSystem } from './systems/xrControllerSystem.js';
 export type {
     EngineConfig,
     PhysicsConfig,
@@ -43,3 +45,4 @@ export type {
 } from './core/types';
 export type { LoadState, MeshComponentOptions, MeshComponentUrlOptions, MeshComponentMeshOptions } from './components/meshComponent.js';
 export type { MaterialMode } from './components/materialComponent.js';
+export type { XRHandedness, XRTrackingSpace } from './components/xrControllerComponent.js';
