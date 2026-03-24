@@ -1,6 +1,7 @@
-import type { Engine as BabylonEngine } from '@babylonjs/core/Engines/engine';
-import type { Scene } from '@babylonjs/core/scene';
-import type { WebXRDefaultExperience } from '@babylonjs/core/XR/webXRDefaultExperience';
+import type {Engine as BabylonEngine} from '@babylonjs/core/Engines/engine';
+import type {Scene} from '@babylonjs/core/scene';
+import type {WebXRDefaultExperience} from '@babylonjs/core/XR/webXRDefaultExperience';
+import {InputSystem} from "@engine/services/input/inputSystem";
 
 /**
  * Configuration options for the {@link IGameEngine}.
@@ -199,6 +200,15 @@ export interface IGameEngine {
     readonly time: TimeState;
     /** All living entities. */
     readonly entities: ReadonlyArray<IEntity>;
+    /** All registered systems. */
+    readonly systems: ReadonlyArray<ISystem>;
+    /** All registered services. */
+    readonly services: ReadonlyMap<string, unknown>;
+    /** The input system, if enabled. */
+    readonly input: InputSystem | undefined;
+    /** Whether the engine has been initialized with Babylon.js. */
+    readonly initialized: boolean;
+
     /**
      * Spawn a new entity.
      * @param name - Optional human-readable name.

@@ -1,9 +1,12 @@
 import type {EngineConfig, IEntity, IGameEngine, ISystem, TimeState,} from './types';
 import {Engine, FreeCamera, HemisphericLight, Scene, Vector3, WebXRDefaultExperience} from '@babylonjs/core';
+
 import {Entity} from './entity';
 import {GameLoop} from './loop';
 import {registerBuiltInLoaders} from "@babylonjs/loaders";
-//import {registerBuiltInLoaders} from "@babylonjs/loaders";
+import {DebugOverlay} from "../debug/debugOverlay";
+import {InputSystem} from "../services/input/inputSystem";
+import {InspectorToken, ShowInspector} from "@babylonjs/inspector";
 
 /** Default engine configuration values. */
 const DEFAULT_CONFIG: EngineConfig = {
@@ -49,11 +52,15 @@ export class GameEngine implements IGameEngine {
     private _sorted = true;
 
     private _canvas?: HTMLCanvasElement;
+
     private _babylonEngine?: Engine;
     private _scene?: Scene;
+    private _input?: InputSystem;
     private _xr?: WebXRDefaultExperience;
     private _initialized = false;
     private _resizeHandler?: () => void;
+    private _debug?: DebugOverlay;
+    private _inspectorToken?: InspectorToken;
 
     /** @inheritDoc */
     get time(): TimeState {
@@ -90,9 +97,24 @@ export class GameEngine implements IGameEngine {
         return this._xr;
     }
 
-    /** Whether the engine has been initialized with Babylon.js. */
+    /** @inheritDoc */
+    get input(): InputSystem | undefined {
+        return this._input;
+    }
+
+    /** @inheritDoc */
     get initialized(): boolean {
         return this._initialized;
+    }
+
+    /** @inheritDoc */
+    get systems(): ISystem[] {
+        return this._systems;
+    }
+
+    /** @inheritDoc */
+    get services(): ReadonlyMap<string, unknown> {
+        return this._services;
     }
 
     /** @param config - Partial configuration merged with {@link DEFAULT_CONFIG}. */
@@ -106,6 +128,7 @@ export class GameEngine implements IGameEngine {
             this._config.fixedTimeStep,
         );
     }
+
 
     // ───────────────────────── Babylon.js bootstrap ──────────────────────────
 
@@ -141,6 +164,8 @@ export class GameEngine implements IGameEngine {
             this._config.adaptToDeviceRatio,
         );
 
+        this._input = new InputSystem();
+
         // Scene
         this._scene = new Scene(this._babylonEngine);
 
@@ -173,26 +198,33 @@ export class GameEngine implements IGameEngine {
                     console.warn('WebXR initialization skipped:', e);
                 }
             }
-        }
 
+        }
         // Resize handling
         this._resizeHandler = () => this._babylonEngine?.resize();
         window.addEventListener('resize', this._resizeHandler);
 
-        this._initialized = true;
-
+        // Set up debug
         if (this._config.debug) {
-            if (this._config.debug) {
-                document.addEventListener("keydown", async (e) => {
-                    if (e.key === "i" && e.ctrlKey && e.altKey) {
-                        const {Inspector} = await import("@babylonjs/inspector");
-                        Inspector.Show(this._scene!, {});
-                        e.stopPropagation();
+            document.addEventListener("keydown", async (e) => {
+                if (e.key === "i" && e.ctrlKey && e.altKey) {
+                    if (this._inspectorToken) {
+                        this._inspectorToken.dispose();
+                        this._inspectorToken = undefined;
+                    } else {
+                        this._inspectorToken = ShowInspector(this._scene!, {});
                     }
-                });
-            }
 
+                }
+                this._debug = new DebugOverlay();
+                this._debug.init(this);
+                if (e.key === 'f' && e.ctrlKey && e.altKey) {
+                    this._debug.enable();
+                }
+            });
         }
+
+        this._initialized = true;
     }
 
     // ──────────────────────── Canvas resolution ──────────────────────────────
@@ -295,6 +327,10 @@ export class GameEngine implements IGameEngine {
         if (this._babylonEngine) {
             this._babylonEngine.runRenderLoop(() => {
                 this.tick(performance.now());
+
+                if (this._config.debug) {
+                    this._debug?.update();
+                }
             });
         }
     }
