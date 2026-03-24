@@ -102,6 +102,49 @@ entity.addComponent(new MeshComponent({
 When the component is removed (or the entity is destroyed), all loaded meshes
 and the root node are automatically disposed.
 
+### Runtime Transform Methods
+
+After a mesh is loaded you can modify its transform at any time using the
+following convenience methods. Changes are batched via a dirty flag and applied
+on the next update tick.
+
+#### Position
+
+| Method | Description |
+|--------|-------------|
+| `setPosition(x, y, z)` | Set the position to absolute world-space coordinates. |
+| `translate(x, y, z)` | Move the mesh by a delta relative to its current position. |
+
+```typescript
+const mc = entity.getComponent(MeshComponent)!;
+mc.setPosition(0, 2, 5);   // teleport to (0, 2, 5)
+mc.translate(1, 0, 0);     // shift 1 unit along X → now at (1, 2, 5)
+```
+
+#### Rotation
+
+| Method | Description |
+|--------|-------------|
+| `setRotation(x, y, z)` | Set rotation to absolute Euler angles (radians). |
+| `rotate(x, y, z)` | Increment the current rotation by the given Euler deltas. |
+
+```typescript
+mc.setRotation(0, Math.PI / 2, 0);  // face 90° around Y
+mc.rotate(0, 0.01, 0);              // add a small Y rotation each frame
+```
+
+#### Scaling
+
+| Method | Description |
+|--------|-------------|
+| `setScale(x, y, z)` | Set per-axis scaling, replacing any previous value. |
+| `scale(x, y, z)` | Multiply the current scaling by per-axis factors. |
+
+```typescript
+mc.setScale(2, 2, 2);   // uniform scale ×2
+mc.scale(1, 2, 1);      // double the Y axis → now (2, 4, 2)
+```
+
 ---
 
 ## MaterialComponent

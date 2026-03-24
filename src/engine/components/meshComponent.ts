@@ -1,6 +1,7 @@
-import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
-import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import { Component } from '../core/component';
+import type {AbstractMesh} from '@babylonjs/core/Meshes/abstractMesh';
+import type {TransformNode} from '@babylonjs/core/Meshes/transformNode';
+import {Component} from '../core/component';
+import {Vector3} from "@babylonjs/core";
 
 /** Loading lifecycle state for async components. */
 export type LoadState = 'pending' | 'loading' | 'loaded' | 'error';
@@ -103,6 +104,8 @@ export class MeshComponent extends Component {
     /** Optional uniform or per-axis scale. */
     scaling?: number | { x: number; y: number; z: number };
 
+    private dirty: boolean = false;
+
     constructor(options: MeshComponentOptions) {
         super();
         this.position = options.position;
@@ -113,7 +116,7 @@ export class MeshComponent extends Component {
             // Direct mesh — mark as loaded immediately
             this.rootNode = options.mesh;
             this.meshes = [options.mesh];
-            this.applyTransforms();
+            this.dirty = true;
             this.state = 'loaded';
         } else {
             this.url = options.url;
@@ -146,7 +149,7 @@ export class MeshComponent extends Component {
         if (this.scaling != null) {
             const s =
                 typeof this.scaling === 'number'
-                    ? { x: this.scaling, y: this.scaling, z: this.scaling }
+                    ? {x: this.scaling, y: this.scaling, z: this.scaling}
                     : this.scaling;
             this.rootNode.scaling.set(s.x, s.y, s.z);
         }
@@ -162,6 +165,130 @@ export class MeshComponent extends Component {
         this.rootNode?.dispose(false);
         this.meshes = [];
         this.rootNode = undefined;
+        this.dirty = false;
     }
+
+    onUpdate(_delta: number) {
+        if (this.dirty) {
+            this.applyTransforms();
+            this.dirty = false;
+        }
+    }
+
+    /**
+     * Increment the current rotation by the given Euler angles (in radians).
+     *
+     * @param x - Delta rotation around the X axis.
+     * @param y - Delta rotation around the Y axis.
+     * @param z - Delta rotation around the Z axis.
+     */
+    rotate(x: number, y: number, z: number) {
+        if (this.rotation) {
+            this.rotation.x += x;
+            this.rotation.y += y;
+            this.rotation.z += z;
+
+        } else {
+            this.rotation = new Vector3(x, y, z);
+        }
+        this.dirty = true;
+    }
+
+    /**
+     * Set the rotation to the given Euler angles (in radians), replacing any
+     * previous rotation.
+     *
+     * @param x - Rotation around the X axis.
+     * @param y - Rotation around the Y axis.
+     * @param z - Rotation around the Z axis.
+     */
+    setRotation(x: number, y: number, z: number) {
+        if (this.rotation) {
+            this.rotation.x = x;
+            this.rotation.y = y;
+            this.rotation.z = z;
+        } else {
+            this.rotation = new Vector3(x, y, z);
+        }
+        this.dirty = true;
+    }
+
+    /**
+     * Translate (move) the mesh by the given delta values, relative to its
+     * current position.
+     *
+     * @param x - Delta along the X axis.
+     * @param y - Delta along the Y axis.
+     * @param z - Delta along the Z axis.
+     */
+    translate(x: number, y: number, z: number) {
+        if (this.position) {
+            this.position.x += x;
+            this.position.y += y;
+            this.position.z += z;
+        } else {
+            this.position = new Vector3(x, y, z);
+        }
+        this.dirty = true;
+    }
+
+    /**
+     * Set the position to the given world-space coordinates, replacing any
+     * previous position.
+     *
+     * @param x - Position on the X axis.
+     * @param y - Position on the Y axis.
+     * @param z - Position on the Z axis.
+     */
+    setPosition(x: number, y: number, z: number) {
+        if (this.position) {
+            this.position.x = x;
+            this.position.y = y;
+            this.position.z = z;
+        } else {
+            this.position = new Vector3(x, y, z);
+        }
+        this.dirty = true;
+    }
+
+    /**
+     * Multiply the current scaling by the given per-axis factors.
+     *
+     * @param x - Scale factor along the X axis.
+     * @param y - Scale factor along the Y axis.
+     * @param z - Scale factor along the Z axis.
+     */
+    scale(x: number, y: number, z: number) {
+        if (this.scaling != null) {
+            const s =
+                typeof this.scaling === 'number'
+                    ? {x: this.scaling, y: this.scaling, z: this.scaling}
+                    : this.scaling;
+            this.scaling = new Vector3(s.x * x, s.y * y, s.z * z);
+        } else {
+            this.scaling = new Vector3(x, y, z);
+        }
+        this.dirty = true;
+    }
+
+    /**
+     * Set the scaling to the given per-axis values, replacing any previous
+     * scaling.
+     *
+     * @param x - Scale on the X axis.
+     * @param y - Scale on the Y axis.
+     * @param z - Scale on the Z axis.
+     */
+    setScale(x: number, y: number, z: number) {
+        if (this.scaling != null && typeof this.scaling !== 'number') {
+            this.scaling.x = x;
+            this.scaling.y = y;
+            this.scaling.z = z;
+        } else {
+            this.scaling = new Vector3(x, y, z);
+        }
+        this.dirty = true;
+    }
+
 }
 
