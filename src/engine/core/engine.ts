@@ -1,13 +1,15 @@
 import type {EngineConfig, IEntity, IGameEngine, ISystem, TimeState,} from './types';
 import {Engine, FreeCamera, HemisphericLight, Scene, Vector3, WebXRDefaultExperience} from '@babylonjs/core';
+import {InspectorToken, ShowInspector} from "@babylonjs/inspector";
+import {registerBuiltInLoaders} from "@babylonjs/loaders";
 
 import {Entity} from './entity';
 import {GameLoop} from './loop';
-import {registerBuiltInLoaders} from "@babylonjs/loaders";
-import {DebugOverlay} from "../debug/debugOverlay";
 import {InputSystem} from "../services/input/inputSystem";
-import {InspectorToken, ShowInspector} from "@babylonjs/inspector";
+import {DebugOverlay} from "../debug/debugOverlay";
 import {createEntityListServiceDefinition} from "../debug/EntityListServiceDefinition";
+import {MeshLoaderSystem} from "../systems/meshLoaderSystem";
+import {MaterialLoaderSystem} from "../systems/materialLoaderSystem";
 
 /** Default engine configuration values. */
 const DEFAULT_CONFIG: EngineConfig = {
@@ -205,6 +207,9 @@ export class GameEngine implements IGameEngine {
         this._resizeHandler = () => this._babylonEngine?.resize();
         window.addEventListener('resize', this._resizeHandler);
 
+        this.registerSystem(new MeshLoaderSystem());
+        this.registerSystem(new MaterialLoaderSystem());
+
         // Set up debug
         if (this._config.debug) {
             this._debug = new DebugOverlay();
@@ -217,18 +222,17 @@ export class GameEngine implements IGameEngine {
                         this._inspectorToken = undefined;
                     } else {
                         this._inspectorToken = ShowInspector(this._scene!, {
-                            serviceDefinitions:[
+                            serviceDefinitions: [
                                 createEntityListServiceDefinition(this),
                             ]
                         });
                     }
-
                 }
 
                 if (e.key === 'f' && e.ctrlKey && e.altKey) {
-                    if(!this._debug!.enabled) {
+                    if (!this._debug!.enabled) {
                         this._debug!.enable();
-                    }else{
+                    } else {
                         this._debug!.disable();
                     }
                 }
