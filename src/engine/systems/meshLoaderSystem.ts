@@ -32,6 +32,9 @@ export class MeshLoaderSystem extends System {
             const mc = entity.getComponent(MeshComponent);
             if (!mc || mc.state !== 'pending') continue;
 
+            // Direct-mesh components have no url — nothing to load
+            if (!mc.url) continue;
+
             // Mark as loading immediately so we don't kick off duplicate loads
             mc.state = 'loading';
             this._loadMesh(mc);
@@ -49,9 +52,8 @@ export class MeshLoaderSystem extends System {
         }
 
         try {
-
             const result = await LoadAssetContainerAsync(
-                mc.url,
+                mc.url!,
                 scene,
             );
 
@@ -59,29 +61,7 @@ export class MeshLoaderSystem extends System {
             mc.rootNode = result.meshes[0] ?? undefined;
 
             // Apply optional transform overrides
-            if (mc.rootNode) {
-                if (mc.position) {
-                    mc.rootNode.position.set(
-                        mc.position.x,
-                        mc.position.y,
-                        mc.position.z,
-                    );
-                }
-                if (mc.rotation) {
-                    mc.rootNode.rotation.set(
-                        mc.rotation.x,
-                        mc.rotation.y,
-                        mc.rotation.z,
-                    );
-                }
-                if (mc.scaling != null) {
-                    const s =
-                        typeof mc.scaling === 'number'
-                            ? { x: mc.scaling, y: mc.scaling, z: mc.scaling }
-                            : mc.scaling;
-                    mc.rootNode.scaling.set(s.x, s.y, s.z);
-                }
-            }
+            mc.applyTransforms();
 
             mc.state = 'loaded';
             result.addToScene();

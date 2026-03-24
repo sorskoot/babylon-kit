@@ -31,7 +31,15 @@ systems (priority 0+).
 
 ## MeshComponent
 
-Attach to an entity to load a 3-D mesh from a URL (glTF, glb, obj, etc.).
+Attach to an entity to give it a 3-D mesh. There are two modes:
+
+1. **URL mode** — provide a `url` and the `MeshLoaderSystem` will
+   asynchronously load the mesh via Babylon's `SceneLoader`.
+2. **Direct mesh mode** — pass an already-created Babylon.js `Mesh` (e.g.
+   from `MeshBuilder`). The component is immediately in the `'loaded'` state
+   and no async loading takes place.
+
+### URL mode
 
 ```typescript
 import { MeshComponent } from "@sorskoot/babylon-kit";
@@ -44,13 +52,39 @@ helmet.addComponent(new MeshComponent({
 }));
 ```
 
-### Options
+### Direct mesh mode
+
+```typescript
+import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
+import { MeshComponent } from "@sorskoot/babylon-kit";
+
+const box = MeshBuilder.CreateBox("Box", { size: 0.25 }, game.scene);
+const entity = game.createEntity("Box");
+entity.addComponent(new MeshComponent({
+    mesh: box,
+    position: { x: 0, y: 1, z: 3 },
+    scaling: 2,
+}));
+```
+
+> **Note:** Supply either `url` *or* `mesh`, never both.
+
+### Options (URL mode)
 
 | Option | Type | Description |
 |--------|------|-------------|
 | `url` | `string` | **Required.** URL of the mesh file. |
 | `rootUrl` | `string` | Root path prepended to the filename. Auto-derived from `url` if omitted. |
 | `position` | `{ x, y, z }` | World position to place the mesh at after loading. |
+| `rotation` | `{ x, y, z }` | Euler rotation in radians. |
+| `scaling` | `number \| { x, y, z }` | Uniform or per-axis scale. |
+
+### Options (direct mesh mode)
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `mesh` | `AbstractMesh` | **Required.** An existing Babylon.js mesh instance. |
+| `position` | `{ x, y, z }` | World position to place the mesh at. |
 | `rotation` | `{ x, y, z }` | Euler rotation in radians. |
 | `scaling` | `number \| { x, y, z }` | Uniform or per-axis scale. |
 
@@ -172,6 +206,7 @@ import {
     MeshLoaderSystem,
     MaterialLoaderSystem,
 } from "@sorskoot/babylon-kit";
+import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
 
 const game = new GameEngine({ debug: true });
 await game.initialize();
@@ -185,6 +220,18 @@ helmet.addComponent(new MeshComponent({
     url: "models/DamagedHelmet.gltf",
     position: { x: 0, y: 1.5, z: 2 },
     scaling: 0.5,
+}));
+
+// A procedural mesh created with MeshBuilder
+const box = MeshBuilder.CreateBox("Box", { size: 0.25 }, game.scene);
+const boxEntity = game.createEntity("Box");
+boxEntity.addComponent(new MeshComponent({
+    mesh: box,
+    position: { x: 2, y: 0.5, z: 3 },
+}));
+boxEntity.addComponent(new MaterialComponent({
+    mode: "standard",
+    diffuseColor: { r: 0, g: 0.8, b: 0.2 },
 }));
 
 // A mesh with a custom PBR material

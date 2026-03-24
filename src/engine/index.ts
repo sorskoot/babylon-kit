@@ -40,5 +40,5 @@ export type {
     SystemUpdatePhase,
     SceneDescriptor,
 } from './core/types';
-export type { LoadState } from './components/meshComponent.js';
+export type { LoadState, MeshComponentOptions, MeshComponentUrlOptions, MeshComponentMeshOptions } from './components/meshComponent.js';
 export type { MaterialMode } from './components/materialComponent.js';
