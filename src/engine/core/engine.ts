@@ -2,6 +2,7 @@ import type {EngineConfig, IEntity, IGameEngine, ISystem, TimeState,} from './ty
 import {Engine, FreeCamera, HemisphericLight, Scene, Vector3, WebXRDefaultExperience} from '@babylonjs/core';
 import {Entity} from './entity';
 import {GameLoop} from './loop';
+import {registerBuiltInLoaders} from "@babylonjs/loaders";
 //import {registerBuiltInLoaders} from "@babylonjs/loaders";
 
 /** Default engine configuration values. */
@@ -127,7 +128,7 @@ export class GameEngine implements IGameEngine {
     async initialize(): Promise<void> {
         if (this._initialized) return;
 
-        //      registerBuiltInLoaders();
+        registerBuiltInLoaders();
 
         // Canvas
         this._canvas = this._resolveCanvas();

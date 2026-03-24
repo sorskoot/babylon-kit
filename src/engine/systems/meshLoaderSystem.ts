@@ -84,6 +84,7 @@ export class MeshLoaderSystem extends System {
             }
 
             mc.state = 'loaded';
+            result.addToScene();
         } catch (e) {
             mc.state = 'error';
             mc.error = e;
@@ -92,6 +93,7 @@ export class MeshLoaderSystem extends System {
                 e,
             );
         }
+
     }
 
     /**
