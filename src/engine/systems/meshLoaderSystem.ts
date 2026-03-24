@@ -1,7 +1,7 @@
-import { System } from '../core/system';
-import { MeshComponent } from '../components/meshComponent';
-import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
-import type { IGameEngine } from '../core/types';
+import {System} from '../core/system';
+import {MeshComponent} from '../components/meshComponent';
+import {LoadAssetContainerAsync} from '@babylonjs/core/Loading/sceneLoader';
+import type {IGameEngine} from '../core/types';
 
 /**
  * Scans entities for {@link MeshComponent}s in `'pending'` state and loads
@@ -75,30 +75,5 @@ export class MeshLoaderSystem extends System {
         }
 
     }
-
-    /**
-     * Split a full URL into `rootUrl` (directory) and `filename`.
-     * If the caller supplied an explicit rootUrl, use that instead.
-     */
-    // private _splitUrl(
-    //     url: string,
-    //     explicitRootUrl?: string,
-    // ): { rootUrl: string; filename: string } {
-    //     if (explicitRootUrl) {
-    //         const lastSlash = url.lastIndexOf('/');
-    //         const filename =
-    //             lastSlash >= 0 ? url.substring(lastSlash + 1) : url;
-    //         return { rootUrl: explicitRootUrl, filename };
-    //     }
-    //
-    //     const lastSlash = url.lastIndexOf('/');
-    //     if (lastSlash >= 0) {
-    //         return {
-    //             rootUrl: url.substring(0, lastSlash + 1),
-    //             filename: url.substring(lastSlash + 1),
-    //         };
-    //     }
-    //     return { rootUrl: '', filename: url };
-    // }
 }
 
