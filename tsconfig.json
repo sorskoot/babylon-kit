@@ -19,10 +19,6 @@
         "noUnusedParameters": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
-        "paths": {
-            "@engine/*": ["./src/engine/*"],
-            "@game/*": ["./src/game/*"]
-        }
     },
     "include": ["src/**/*"],
     "exclude": ["node_modules", "dist", "**/*.test.ts"]

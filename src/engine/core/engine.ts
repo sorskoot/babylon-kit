@@ -7,6 +7,7 @@ import {registerBuiltInLoaders} from "@babylonjs/loaders";
 import {DebugOverlay} from "../debug/debugOverlay";
 import {InputSystem} from "../services/input/inputSystem";
 import {InspectorToken, ShowInspector} from "@babylonjs/inspector";
+import {createEntityListServiceDefinition} from "../debug/EntityListServiceDefinition";
 
 /** Default engine configuration values. */
 const DEFAULT_CONFIG: EngineConfig = {
@@ -206,20 +207,30 @@ export class GameEngine implements IGameEngine {
 
         // Set up debug
         if (this._config.debug) {
+            this._debug = new DebugOverlay();
+            this._debug.init(this);
+
             document.addEventListener("keydown", async (e) => {
                 if (e.key === "i" && e.ctrlKey && e.altKey) {
                     if (this._inspectorToken) {
                         this._inspectorToken.dispose();
                         this._inspectorToken = undefined;
                     } else {
-                        this._inspectorToken = ShowInspector(this._scene!, {});
+                        this._inspectorToken = ShowInspector(this._scene!, {
+                            serviceDefinitions:[
+                                createEntityListServiceDefinition(this),
+                            ]
+                        });
                     }
 
                 }
-                this._debug = new DebugOverlay();
-                this._debug.init(this);
+
                 if (e.key === 'f' && e.ctrlKey && e.altKey) {
-                    this._debug.enable();
+                    if(!this._debug!.enabled) {
+                        this._debug!.enable();
+                    }else{
+                        this._debug!.disable();
+                    }
                 }
             });
         }

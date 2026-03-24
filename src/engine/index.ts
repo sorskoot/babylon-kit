@@ -19,6 +19,7 @@ export { AudioManager } from './services/audio/audioManager.js';
 export { PhysicsService } from './services/physics/physicsService';
 export { SceneManager } from './services/scenes/sceneManager';
 export { DebugOverlay } from './debug/debugOverlay';
+export { createEntityListServiceDefinition } from './debug/EntityListServiceDefinition';
 export { MeshComponent } from './components/meshComponent.js';
 export { MaterialComponent } from './components/materialComponent.js';
 export { MeshLoaderSystem } from './systems/meshLoaderSystem.js';
