@@ -40,6 +40,8 @@ components and call `start()`.
 ```
 src/engine/
   core/         — Engine, GameLoop, Entity, Component, System, types
+  components/   — MeshComponent, MaterialComponent (built-in data components)
+  systems/      — MeshLoaderSystem, MaterialLoaderSystem (built-in ECS systems)
   services/
     input/      — Keyboard, mouse, gamepad, action mapping
     assets/     — Async loading, caching, manifests
@@ -70,6 +72,7 @@ npm run test:coverage  # with coverage
 
 - [Engine Core](docs/engine-core.md) — Bootstrapping, game loop, time management
 - [ECS](docs/ecs.md) — Entities, components, systems
+- [Built-in Components & Systems](docs/components-systems.md) — MeshComponent, MaterialComponent, loader systems
 - [Input System](docs/input.md) — Keyboard, mouse, gamepad, actions
 - [Asset Pipeline](docs/assets.md) — Loading, caching, manifests
 - [Audio](docs/audio.md) — Sound playback, groups, volume

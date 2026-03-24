@@ -1,9 +1,8 @@
 import type {EngineConfig, IEntity, IGameEngine, ISystem, TimeState,} from './types';
-import type {Engine as BabylonEngine} from '@babylonjs/core/Engines/engine';
-import type {Scene} from '@babylonjs/core/scene';
-import type {WebXRDefaultExperience} from '@babylonjs/core/XR/webXRDefaultExperience';
+import {Engine, FreeCamera, HemisphericLight, Scene, Vector3, WebXRDefaultExperience} from '@babylonjs/core';
 import {Entity} from './entity';
 import {GameLoop} from './loop';
+//import {registerBuiltInLoaders} from "@babylonjs/loaders";
 
 /** Default engine configuration values. */
 const DEFAULT_CONFIG: EngineConfig = {
@@ -49,7 +48,7 @@ export class GameEngine implements IGameEngine {
     private _sorted = true;
 
     private _canvas?: HTMLCanvasElement;
-    private _babylonEngine?: BabylonEngine;
+    private _babylonEngine?: Engine;
     private _scene?: Scene;
     private _xr?: WebXRDefaultExperience;
     private _initialized = false;
@@ -71,7 +70,7 @@ export class GameEngine implements IGameEngine {
     }
 
     /** @inheritDoc */
-    get babylonEngine(): BabylonEngine | undefined {
+    get babylonEngine(): Engine | undefined {
         return this._babylonEngine;
     }
 
@@ -128,14 +127,7 @@ export class GameEngine implements IGameEngine {
     async initialize(): Promise<void> {
         if (this._initialized) return;
 
-        // Dynamic import keeps Babylon.js out of Node-based test bundles.
-        const {
-            Engine,
-            Scene: BabylonScene,
-            FreeCamera,
-            HemisphericLight,
-            Vector3,
-        } = await import('@babylonjs/core');
+        //      registerBuiltInLoaders();
 
         // Canvas
         this._canvas = this._resolveCanvas();
@@ -149,7 +141,7 @@ export class GameEngine implements IGameEngine {
         );
 
         // Scene
-        this._scene = new BabylonScene(this._babylonEngine);
+        this._scene = new Scene(this._babylonEngine);
 
         // Default camera
         if (this._config.createDefaultCamera !== false) {
@@ -170,12 +162,11 @@ export class GameEngine implements IGameEngine {
                 this._scene,
             );
         }
-
         // WebXR
         if (this._config.webXR !== false) {
             try {
-                this._xr =
-                    await this._scene.createDefaultXRExperienceAsync({});
+                //this._xr = await WebXRDefaultExperience.CreateAsync(this._scene, {});
+                this._xr = await this._scene.createDefaultXRExperienceAsync({});
             } catch (e) {
                 if (this._config.debug) {
                     console.warn('WebXR initialization skipped:', e);

@@ -19,6 +19,10 @@ export { AudioManager } from './services/audio/audioManager.js';
 export { PhysicsService } from './services/physics/physicsService';
 export { SceneManager } from './services/scenes/sceneManager';
 export { DebugOverlay } from './debug/debugOverlay';
+export { MeshComponent } from './components/meshComponent.js';
+export { MaterialComponent } from './components/materialComponent.js';
+export { MeshLoaderSystem } from './systems/meshLoaderSystem.js';
+export { MaterialLoaderSystem } from './systems/materialLoaderSystem.js';
 export type {
     EngineConfig,
     PhysicsConfig,
@@ -36,3 +40,5 @@ export type {
     SystemUpdatePhase,
     SceneDescriptor,
 } from './core/types';
+export type { LoadState } from './components/meshComponent.js';
+export type { MaterialMode } from './components/materialComponent.js';

@@ -78,7 +78,8 @@ export interface TimeState {
  * @typeParam T - The concrete component type.
  */
 export interface ComponentClass<T extends IComponent = IComponent> {
-    new (...args: unknown[]): T;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    new (...args: any[]): T;
 }
 
 /**
