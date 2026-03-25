@@ -226,7 +226,8 @@ class SpawnEffectSystem extends System {
     onRegister(engine: IGameEngine) { this._engine = engine; }
 
     update(): void {
-        for (const entity of this._engine.entities) {
+        // Only iterates entities that actually have a MeshComponent — O(k) not O(n)
+        for (const entity of this._engine.getEntitiesWithComponent(MeshComponent)) {
             const mc = entity.getComponent(MeshComponent);
             if (mc?.state === "loaded" && !entity.hasComponent(ReadyTag)) {
                 entity.addComponent(new ReadyTag());

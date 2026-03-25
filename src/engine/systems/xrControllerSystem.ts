@@ -3,6 +3,8 @@ import { System } from '../core/system';
 import type { IGameEngine } from '../core/types';
 import { XRControllerComponent } from '../components/xrControllerComponent';
 import { MeshComponent } from '../components/meshComponent';
+import {WebXRInputSource, WebXRCamera, WebXRState} from "@babylonjs/core";
+
 
 /**
  * Matches entities that have an {@link XRControllerComponent} to the
@@ -19,7 +21,7 @@ import { MeshComponent } from '../components/meshComponent';
  * - {@link XRControllerComponent.hideControllerMesh | hideControllerMesh}
  *   hides the built-in controller model so only your mesh is visible.
  * - Controller disconnect is detected automatically; the component's
- *   `inputSource` is cleared and the entity will re-attach to the next
+ *   `inputSource` is cleared, and the entity will re-attach to the next
  *   controller that connects with the matching handedness.
  *
  * Register once, then add {@link XRControllerComponent} to any entities
@@ -53,10 +55,20 @@ export class XRControllerSystem extends System {
 
     /**
      * Entity IDs whose mesh root has already been parented to a controller
-     * anchor. Cleared when the controller disconnects so re-attachment
+     * anchor. Cleared when the controller disconnects, so re-attachment
      * occurs automatically.
      */
     private readonly _attached = new Set<number>();
+
+    /**
+     * Tracks the currently connected XR controllers by their `uniqueId`.
+     *
+     * @remarks
+     * This registry is maintained for future functionality (for example,
+     * global access to controllers, haptics, or cross-system coordination),
+     * and is not yet read elsewhere in the engine.
+     */
+    private _controllers: Map<string, WebXRInputSource> = new Map();
 
     constructor() {
         // Run after MeshLoaderSystem (-100) so meshes are ready, but
@@ -66,25 +78,30 @@ export class XRControllerSystem extends System {
 
     override onRegister(engine: IGameEngine): void {
         this._engine = engine;
+        this._engine.onXRStateChanged.add(this._onXRStateChange);
+        this._engine.onXRInitialPose.add(this._onXRInitialPose);
     }
 
     override onUnregister(): void {
         // Re-enable any controller meshes that were hidden by this system.
         const xr = this._engine?.xr;
         if (!xr) return;
-        for (const entity of this._engine.entities) {
+        for (const entity of this._engine.getEntitiesWithComponent(XRControllerComponent)) {
             const xrComp = entity.getComponent(XRControllerComponent);
             if (!xrComp?.hideControllerMesh || !xrComp.inputSource) continue;
             const rootMesh = xrComp.inputSource.motionController?.rootMesh;
             rootMesh?.setEnabled(true);
         }
+
+        this._engine.onXRStateChanged.removeCallback(this._onXRStateChange);
+        this._engine.onXRInitialPose.removeCallback(this._onXRInitialPose);
     }
 
     update(_delta: number): void {
         const xr = this._engine.xr;
         if (!xr) return;
 
-        for (const entity of this._engine.entities) {
+        for (const entity of this._engine.getEntitiesWithComponent(XRControllerComponent)) {
             const xrComp = entity.getComponent(XRControllerComponent);
             if (!xrComp) continue;
 
@@ -139,7 +156,7 @@ export class XRControllerSystem extends System {
             mc.rootNode.position.set(0, 0, 0);
 
             // If the root node uses quaternion rotation, clear it so that
-            // subsequent euler-based applyTransforms calls work correctly.
+            // later euler-based applyTransforms calls work correctly.
             if (mc.rootNode.rotationQuaternion) {
                 mc.rootNode.rotationQuaternion = null;
                 mc.rootNode.rotation.set(0, 0, 0);
@@ -148,9 +165,39 @@ export class XRControllerSystem extends System {
             // Re-apply configured offsets (position / rotation / scaling) as
             // local transforms relative to the controller anchor.
             mc.applyTransforms();
-
             this._attached.add(entity.id);
         }
+    }
+
+    private _onXRStateChange = (state: WebXRState) => {
+        if (state === WebXRState.ENTERING_XR) {
+            // Reset controller tracking state when entering XR; controllers
+            // will be re-populated via the input observables.
+            this._controllers.clear();
+            this._attached.clear();
+        }
+        if (state === WebXRState.EXITING_XR) {
+            // Stop tracking controllers and clear the attachment state when
+            // exiting XR to avoid holding stale references.
+            this._controllers.clear();
+            this._attached.clear();
+        }
+        if (state === WebXRState.ENTERING_XR) {
+
+            // start tracking controllers
+        }
+        if (state === WebXRState.EXITING_XR) {
+            // stop/pause tracking controllers
+        }
+    }
+    private _onXRInitialPose = (_camera:WebXRCamera) => {
+        this._engine.xr?.input?.onControllerAddedObservable.add((s)=>{
+            this._controllers.set(s.uniqueId,s);
+        });
+
+        this._engine.xr?.input?.onControllerRemovedObservable.add((s)=>{
+            this._controllers.delete(s.uniqueId);
+        });
     }
 }
 

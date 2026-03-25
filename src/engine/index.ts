@@ -10,9 +10,10 @@
  */
 export { GameEngine } from './core/engine.js';
 export { GameLoop } from './core/loop.js';
-export { Entity } from './core/entity.js';
+export { Entity, resetEntityIdCounter } from './core/entity.js';
 export { Component } from './core/component.js';
 export { System } from './core/system.js';
+export { ComponentIndex } from './core/componentIndex.js';
 export { InputSystem } from './services/input/inputSystem.js';
 export { AssetManager } from './services/assets/assetManager.js';
 export { AudioManager } from './services/audio/audioManager.js';

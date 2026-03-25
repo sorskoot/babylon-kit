@@ -25,10 +25,32 @@ All public exports flow through `src/engine/index.ts`. Add new exports there whe
 
 ## ECS Patterns
 - **Components** extend `Component` (from `core/component.ts`) — **data only**. Use lifecycle hooks `onAdd`, `onRemove`, `onUpdate`, `onEnable`, `onDisable`.
-- **Systems** extend `System` (from `core/system.ts`) — implement `readonly name`, `update(delta)`. Access entities via `this._engine.entities` acquired in `onRegister(engine)`. Use `entity.getComponent(MyComp)` for type-safe lookups.
+- **Systems** extend `System` (from `core/system.ts`) — implement `readonly name`, `update(delta)`. Access entities via `this._engine.getEntitiesWithComponent(MyComp)` acquired in `onRegister(engine)`. Use `entity.getComponent(MyComp)` for type-safe lookups.
 - **Priority**: lower numbers run first. `MeshLoaderSystem` uses `-100` to run before everything else.
 - Components are keyed by **class name** — only one instance of each component class per entity is allowed.
 - Entity IDs are auto-incrementing integers. Use `resetEntityIdCounter()` (exported for tests) to reset between test runs.
+
+## ComponentIndex — O(1) Entity Queries
+`GameEngine` maintains a `ComponentIndex` (`core/componentIndex.ts`) that maps each component class name to a `Set<IEntity>`. The index is kept in sync automatically:
+
+- **`addComponent`** fires `onComponentAdded` → O(1) bucket insert.
+- **`removeComponent`** fires `onComponentRemoved` → O(1) bucket delete.
+- **`entity.destroy()`** fires `onComponentRemoved` per component + a safety sweep in `_onEntityDestroyed`.
+
+Systems should **always** query via `engine.getEntitiesWithComponent(MyComp)` instead of looping `engine.entities`. This makes per-frame work O(k) — proportional only to entities that have the relevant component — rather than O(n) over all entities.
+
+```ts
+// ✅ O(k) — only entities that actually have MeshComponent
+for (const entity of this._engine.getEntitiesWithComponent(MeshComponent)) {
+    const mc = entity.getComponent(MeshComponent)!;
+}
+
+// ❌ O(n) — avoid in systems
+for (const entity of this._engine.entities) {
+    const mc = entity.getComponent(MeshComponent);
+    if (!mc) continue;
+}
+```
 
 ## GameEngine Bootstrap Flow
 1. `new GameEngine(config?)` — merges with defaults (antialias, 60fps, WebXR enabled, default camera+light).
@@ -63,6 +85,7 @@ Use `@engine/...` for imports within `src/` and test files.
 |------|---------|
 | `src/engine/core/types.ts` | All interfaces (`IGameEngine`, `IEntity`, `ISystem`, `IComponent`, `EngineConfig`, etc.) |
 | `src/engine/core/engine.ts` | Full engine implementation — start here for any engine-level change |
+| `src/engine/core/componentIndex.ts` | O(1) component-type → entity index; maintained by `GameEngine`, queried via `getEntitiesWithComponent` |
 | `src/engine/core/loop.ts` | Fixed-step accumulator game loop driven by Babylon's `runRenderLoop` |
 | `samples/ecs-demo/ecs-demo.ts` | Canonical example of components + systems + `onRegister` pattern |
 | `src/engine/index.ts` | Public API barrel — add new exports here |

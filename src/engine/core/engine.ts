@@ -1,16 +1,27 @@
-import type {EngineConfig, IEntity, IGameEngine, ISystem, TimeState,} from './types';
-import {Engine, FreeCamera, HemisphericLight, Scene, Vector3, WebXRDefaultExperience} from '@babylonjs/core';
+import type {ComponentClass, EngineConfig, IComponent, IEntity, IGameEngine, ISystem, TimeState,} from './types';
+import {
+    Engine,
+    FreeCamera,
+    HemisphericLight,
+    Scene,
+    Vector3,
+    WebXRCamera,
+    WebXRDefaultExperience,
+    WebXRState
+} from '@babylonjs/core';
 import {InspectorToken, ShowInspector} from "@babylonjs/inspector";
 import {registerBuiltInLoaders} from "@babylonjs/loaders";
 
 import {Entity} from './entity';
 import {GameLoop} from './loop';
+import {ComponentIndex} from './componentIndex';
 import {InputSystem} from "../services/input/inputSystem";
 import {DebugOverlay} from "../debug/debugOverlay";
 import {createEntityListServiceDefinition} from "../debug/EntityListServiceDefinition";
 import {MeshLoaderSystem} from "../systems/meshLoaderSystem";
 import {MaterialLoaderSystem} from "../systems/materialLoaderSystem";
 import {XRControllerSystem} from "../systems/xrControllerSystem";
+import {Observable} from "@babylonjs/core/Misc/observable";
 
 /** Default engine configuration values. */
 const DEFAULT_CONFIG: EngineConfig = {
@@ -48,11 +59,16 @@ const DEFAULT_CONFIG: EngineConfig = {
  * ```
  */
 export class GameEngine implements IGameEngine {
+
+    readonly onXRStateChanged = new Observable<WebXRState>();
+    readonly onXRInitialPose = new Observable<WebXRCamera>();
+
     private readonly _config: EngineConfig;
     private readonly _entities: Entity[] = [];
     private readonly _systems: ISystem[] = [];
     private readonly _services = new Map<string, unknown>();
     private readonly _loop: GameLoop;
+    private readonly _componentIndex = new ComponentIndex();
     private _sorted = true;
 
     private _canvas?: HTMLCanvasElement;
@@ -61,6 +77,8 @@ export class GameEngine implements IGameEngine {
     private _scene?: Scene;
     private _input?: InputSystem;
     private _xr?: WebXRDefaultExperience;
+    private _webXRState :WebXRState = WebXRState.NOT_IN_XR;
+
     private _initialized = false;
     private _resizeHandler?: () => void;
     private _debug?: DebugOverlay;
@@ -102,6 +120,11 @@ export class GameEngine implements IGameEngine {
     }
 
     /** @inheritDoc */
+    get webXRState(): WebXRState {
+        return this._webXRState;
+    }
+
+    /** @inheritDoc */
     get input(): InputSystem | undefined {
         return this._input;
     }
@@ -131,10 +154,8 @@ export class GameEngine implements IGameEngine {
             () => this._render(),
             this._config.fixedTimeStep,
         );
+
     }
-
-
-    // ───────────────────────── Babylon.js bootstrap ──────────────────────────
 
     /**
      * Initialize the Babylon.js engine, scene, default camera &amp; light, and
@@ -195,15 +216,22 @@ export class GameEngine implements IGameEngine {
         // WebXR
         if (this._config.webXR !== false) {
             try {
-                //this._xr = await WebXRDefaultExperience.CreateAsync(this._scene, {});
-                this._xr = await this._scene.createDefaultXRExperienceAsync({});
+                this._xr = await this._scene.createDefaultXRExperienceAsync({
+                    disableHandTracking: true,
+                });
+
+                this._xr.baseExperience.onInitialXRPoseSetObservable.add(
+                    this._onInitialXRPoseSet
+                );
+
+                this._xr.baseExperience.onStateChangedObservable.add(
+                    this._onXRStateChange
+                )
             } catch (e) {
-                if (this._config.debug) {
-                    console.warn('WebXR initialization skipped:', e);
-                }
+                console.warn('WebXR initialization skipped:', e);
             }
 
-            this.registerSystem(new XRControllerSystem());
+
         }
         // Resize handling
         this._resizeHandler = () => this._babylonEngine?.resize();
@@ -211,6 +239,9 @@ export class GameEngine implements IGameEngine {
 
         this.registerSystem(new MeshLoaderSystem());
         this.registerSystem(new MaterialLoaderSystem());
+        if (this._config.webXR !== false) {
+            this.registerSystem(new XRControllerSystem());
+        }
 
         // Set up debug
         if (this._config.debug) {
@@ -289,7 +320,12 @@ export class GameEngine implements IGameEngine {
 
     /** @inheritDoc */
     createEntity(name?: string): IEntity {
-        const entity = new Entity(name, (e) => this._onEntityDestroyed(e));
+        const entity = new Entity(
+            name,
+            (e) => this._onEntityDestroyed(e),
+            (e, key) => this._componentIndex.onComponentAdded(e, key),
+            (e, key) => this._componentIndex.onComponentRemoved(e, key),
+        );
         this._entities.push(entity);
         return entity;
     }
@@ -340,7 +376,7 @@ export class GameEngine implements IGameEngine {
         this._loop.start();
 
         // When Babylon.js has been initialized, drive the game loop from its
-        // render loop so timing stays in sync with the rendering cadence.
+        // render loop so the timing stays in sync with the rendering cadence.
         if (this._babylonEngine) {
             this._babylonEngine.runRenderLoop(() => {
                 this.tick(performance.now());
@@ -446,10 +482,45 @@ export class GameEngine implements IGameEngine {
         this._initialized = false;
     }
 
+    /** @inheritDoc */
+    getEntitiesWithComponent<T extends IComponent>(
+        componentClass: ComponentClass<T>,
+    ): ReadonlySet<IEntity> {
+        return this._componentIndex.getEntities(componentClass);
+    }
+
     private _onEntityDestroyed(entity: Entity): void {
         const idx = this._entities.indexOf(entity);
         if (idx !== -1) {
             this._entities.splice(idx, 1);
         }
+        // Safety sweep: remove entity from all component-index buckets even if
+        // individual onComponentRemoved callbacks missed an edge case.
+        this._componentIndex.onEntityDestroyed(entity);
     }
+
+    private _onInitialXRPoseSet = (camera:WebXRCamera) => {
+        this.onXRInitialPose.notifyObservers(camera);
+    }
+
+    private _onXRStateChange = (state:WebXRState) => {
+        switch (state){
+            case WebXRState.NOT_IN_XR:
+                console.log("XR not in use");
+                this._webXRState = WebXRState.NOT_IN_XR;
+                break;
+            case WebXRState.IN_XR:
+                console.log("XR in use");
+                break;
+            case WebXRState.EXITING_XR:
+                console.log("XR exiting");
+                break;
+            case WebXRState.ENTERING_XR:
+                console.log("XR entering");
+                break;
+        }
+        this.onXRStateChanged.notifyObservers(state);
+    }
+
 }
+

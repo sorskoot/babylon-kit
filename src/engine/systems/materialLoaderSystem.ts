@@ -32,7 +32,7 @@ export class MaterialLoaderSystem extends System {
     }
 
     update(_delta: number): void {
-        for (const entity of this._engine.entities) {
+        for (const entity of this._engine.getEntitiesWithComponent(MaterialComponent)) {
             const mat = entity.getComponent(MaterialComponent);
             if (!mat || mat.state !== 'pending') continue;
 

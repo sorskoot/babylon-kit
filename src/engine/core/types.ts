@@ -1,7 +1,9 @@
 import type {Engine as BabylonEngine} from '@babylonjs/core/Engines/engine';
 import type {Scene} from '@babylonjs/core/scene';
 import type {WebXRDefaultExperience} from '@babylonjs/core/XR/webXRDefaultExperience';
-import {InputSystem} from "@engine/services/input/inputSystem";
+import {InputSystem} from "../services/input/inputSystem";
+import {Observable} from "@babylonjs/core/Misc/observable";
+import {WebXRCamera, WebXRState} from "@babylonjs/core";
 
 /**
  * Configuration options for the {@link IGameEngine}.
@@ -209,6 +211,35 @@ export interface IGameEngine {
     /** Whether the engine has been initialized with Babylon.js. */
     readonly initialized: boolean;
 
+    /** Observable that fires when the WebXR state changes.*/
+    onXRStateChanged: Observable<WebXRState>;
+    /** Current WebXR state. */
+    readonly webXRState: WebXRState;
+
+    onXRInitialPose: Observable<WebXRCamera>;
+
+    /**
+     * Return the set of all entities that currently carry a component of the
+     * given type. Backed by an internal {@link ComponentIndex} that is updated
+     * in O(1) whenever components are added or removed — iterating this result
+     * is always cheaper than scanning {@link entities}.
+     *
+     * @typeParam T - The component type.
+     * @param componentClass - The component class to query.
+     * @returns A read-only set of matching entities. Never `undefined`; returns
+     *   an empty set when no entities match.
+     *
+     * @example
+     * ```ts
+     * for (const entity of engine.getEntitiesWithComponent(MeshComponent)) {
+     *     const mc = entity.getComponent(MeshComponent)!;
+     *     // process mc …
+     * }
+     * ```
+     */
+    getEntitiesWithComponent<T extends IComponent>(
+        componentClass: ComponentClass<T>,
+    ): ReadonlySet<IEntity>;
     /**
      * Spawn a new entity.
      * @param name - Optional human-readable name.

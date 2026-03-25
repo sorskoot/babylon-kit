@@ -57,29 +57,46 @@ entity.removeComponent(Health);    // calls onRemove
 
 Extend `System` and implement `update()`. Systems run in priority order (lower = earlier).
 
+### Querying entities — use the component index
+
+Instead of iterating over **all** entities each frame, use
+`engine.getEntitiesWithComponent()`. The engine maintains an internal
+[`ComponentIndex`](../src/engine/core/componentIndex.ts) that is updated in
+**O(1)** whenever a component is added or removed, so every query is a single
+`Map.get` returning a live `Set` of only the matching entities.
+
 ```typescript
-import { System } from "./src/engine";
+import { System, IGameEngine } from "./src/engine";
 
 class MovementSystem extends System {
     readonly name = "movement";
+    private _engine!: IGameEngine;
 
     constructor() {
         super(10); // priority
     }
 
+    override onRegister(engine: IGameEngine): void {
+        this._engine = engine;
+    }
+
     update(delta: number): void {
-        for (const entity of this.engine.entities) {
-            const vel = entity.getComponent(Velocity);
+        // O(k) — only iterates entities that actually have Velocity
+        for (const entity of this._engine.getEntitiesWithComponent(Velocity)) {
+            const vel = entity.getComponent(Velocity)!;
             const transform = entity.getComponent(TransformLink);
-            if (vel && transform) {
-                transform.mesh.position.x += vel.x * delta;
-                transform.mesh.position.y += vel.y * delta;
-                transform.mesh.position.z += vel.z * delta;
-            }
+            if (!transform) continue;
+            transform.mesh.position.x += vel.x * delta;
+            transform.mesh.position.y += vel.y * delta;
+            transform.mesh.position.z += vel.z * delta;
         }
     }
 }
 ```
+
+> **Do not** iterate `engine.entities` in systems — that is an O(n) scan over
+> every entity regardless of which components it has. Always prefer
+> `getEntitiesWithComponent()`.
 
 ### Fixed Update
 
@@ -108,3 +125,21 @@ movement.enabled = false;  // disable temporarily
 
 game.unregisterSystem(movement);
 ```
+
+## ComponentIndex
+
+The engine's internal `ComponentIndex` is what powers `getEntitiesWithComponent`.
+It is wired up automatically — you never need to interact with it directly.
+
+For advanced use cases (e.g. custom test harnesses) you can import and
+instantiate it standalone:
+
+```typescript
+import { ComponentIndex } from "@sorskoot/babylon-kit";
+
+const index = new ComponentIndex();
+index.onComponentAdded(entity, "Health");
+const entities = index.getEntities(Health); // ReadonlySet<IEntity>
+index.clear(); // reset between tests
+```
+

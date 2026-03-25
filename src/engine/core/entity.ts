@@ -35,6 +35,8 @@ export class Entity implements IEntity {
     private readonly _components = new Map<string, IComponent>();
     private _destroyed = false;
     private _onDestroy?: (entity: Entity) => void;
+    private _onComponentAdded?: (entity: Entity, key: string) => void;
+    private _onComponentRemoved?: (entity: Entity, key: string) => void;
 
     /** @inheritDoc */
     get components(): ReadonlyMap<string, IComponent> {
@@ -50,11 +52,22 @@ export class Entity implements IEntity {
      * @param name - Human-readable label. Defaults to `"Entity_{id}"`.
      * @param onDestroy - Internal callback invoked when the entity is destroyed
      *   so the engine can remove it from its collection.
+     * @param onComponentAdded - Internal callback invoked after a component is
+     *   attached so the engine's {@link ComponentIndex} can be updated.
+     * @param onComponentRemoved - Internal callback invoked after a component is
+     *   detached so the engine's {@link ComponentIndex} can be updated.
      */
-    constructor(name?: string, onDestroy?: (entity: Entity) => void) {
+    constructor(
+        name?: string,
+        onDestroy?: (entity: Entity) => void,
+        onComponentAdded?: (entity: Entity, key: string) => void,
+        onComponentRemoved?: (entity: Entity, key: string) => void,
+    ) {
         this.id = nextEntityId++;
         this.name = name ?? `Entity_${this.id}`;
         this._onDestroy = onDestroy;
+        this._onComponentAdded = onComponentAdded;
+        this._onComponentRemoved = onComponentRemoved;
     }
 
     /** @inheritDoc */
@@ -73,6 +86,7 @@ export class Entity implements IEntity {
         component.entity = this;
         this._components.set(key, component);
         component.onAdd?.();
+        this._onComponentAdded?.(this, key);
         return component;
     }
 
@@ -88,6 +102,7 @@ export class Entity implements IEntity {
         component.onRemove?.();
         component.entity = undefined;
         this._components.delete(key);
+        this._onComponentRemoved?.(this, key);
     }
 
     /** @inheritDoc */
@@ -108,9 +123,10 @@ export class Entity implements IEntity {
     destroy(): void {
         if (this._destroyed) return;
         this._destroyed = true;
-        for (const component of this._components.values()) {
+        for (const [key, component] of this._components) {
             component.onRemove?.();
             component.entity = undefined;
+            this._onComponentRemoved?.(this, key);
         }
         this._components.clear();
         this._onDestroy?.(this);

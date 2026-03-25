@@ -28,7 +28,7 @@ export class MeshLoaderSystem extends System {
     }
 
     update(_delta: number): void {
-        for (const entity of this._engine.entities) {
+        for (const entity of this._engine.getEntitiesWithComponent(MeshComponent)) {
             const mc = entity.getComponent(MeshComponent);
             if (!mc || mc.state !== 'pending') continue;
 
