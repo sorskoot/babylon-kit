@@ -102,10 +102,8 @@ export class XRControllerSystem extends System {
         if (!xr) return;
 
         for (const entity of this._engine.getEntitiesWithComponent(XRControllerComponent)) {
-            const xrComp = entity.getComponent(XRControllerComponent);
-            if (!xrComp) continue;
+            const xrComp = entity.getComponent(XRControllerComponent)!;
 
-            // ── Controller lookup ──────────────────────────────────────────
             if (xrComp.inputSource) {
                 // Verify the controller is still connected.
                 if (!xr.input.controllers.includes(xrComp.inputSource)) {
@@ -124,7 +122,7 @@ export class XRControllerSystem extends System {
 
             const inputSource = xrComp.inputSource;
 
-            // ── Controller anchor ──────────────────────────────────────────
+            // Controller anchor
             const anchor: AbstractMesh | null | undefined =
                 xrComp.trackingSpace === 'grip'
                     ? inputSource.grip
@@ -132,7 +130,6 @@ export class XRControllerSystem extends System {
 
             if (!anchor) continue;
 
-            // ── Hide default controller mesh (replace mode) ────────────────
             if (xrComp.hideControllerMesh) {
                 const rootMesh = inputSource.motionController?.rootMesh;
                 if (rootMesh?.isEnabled()) {
@@ -140,7 +137,7 @@ export class XRControllerSystem extends System {
                 }
             }
 
-            // ── Parent entity mesh to controller anchor ────────────────────
+            // Parent entity mesh to controller anchor
             if (this._attached.has(entity.id)) continue;
 
             const mc = entity.getComponent(MeshComponent);
@@ -170,25 +167,25 @@ export class XRControllerSystem extends System {
     }
 
     private _onXRStateChange = (state: WebXRState) => {
-        if (state === WebXRState.ENTERING_XR) {
-            // Reset controller tracking state when entering XR; controllers
-            // will be re-populated via the input observables.
-            this._controllers.clear();
-            this._attached.clear();
-        }
+        // if (state === WebXRState.ENTERING_XR) {
+        //     // Reset controller tracking state when entering XR; controllers
+        //     // will be re-populated via the input observables.
+        //     this._controllers.clear();
+        //     this._attached.clear();
+        // }
         if (state === WebXRState.EXITING_XR) {
             // Stop tracking controllers and clear the attachment state when
             // exiting XR to avoid holding stale references.
             this._controllers.clear();
             this._attached.clear();
         }
-        if (state === WebXRState.ENTERING_XR) {
-
-            // start tracking controllers
-        }
-        if (state === WebXRState.EXITING_XR) {
-            // stop/pause tracking controllers
-        }
+        // if (state === WebXRState.ENTERING_XR) {
+        //
+        //     // start tracking controllers
+        // }
+        // if (state === WebXRState.EXITING_XR) {
+        //     // stop/pause tracking controllers
+        // }
     }
     private _onXRInitialPose = (_camera:WebXRCamera) => {
         this._engine.xr?.input?.onControllerAddedObservable.add((s)=>{

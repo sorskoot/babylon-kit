@@ -106,6 +106,13 @@ export class MeshComponent extends Component {
 
     private dirty: boolean = false;
 
+    private _isPickable: boolean = true;
+    public get isPickable(): boolean { return this._isPickable; }
+    public set isPickable(value: boolean) {
+        this._isPickable = value;
+        this.updatePickable();
+    }
+
     constructor(options: MeshComponentOptions) {
         super();
         this.position = options.position;
@@ -290,5 +297,11 @@ export class MeshComponent extends Component {
         this.dirty = true;
     }
 
+    /** Set the mesh's pickability. */
+    private updatePickable() {
+        this.meshes.forEach(mesh => {
+            mesh.isPickable = this.isPickable;
+        })
+    }
 }
 
