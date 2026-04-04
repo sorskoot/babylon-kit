@@ -1,7 +1,7 @@
 import { Engine } from "@babylonjs/core";
 import { SceneManager } from "./SceneManager";
 import { AssetManager } from "./AssetManager";
-import { UIManager } from "./UIManager.ts";
+import { UIManager } from "./UIManager";
 import { ParticleManager } from "./ParticleManager";
 import { AnimationManager } from "./AnimationManager";
 

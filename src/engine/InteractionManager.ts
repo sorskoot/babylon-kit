@@ -1,5 +1,5 @@
 import { Scene, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
-import { GameObject } from "./GameObject.ts";
+import { GameObject } from "./GameObject";
 
 export class InteractionManager {
     private scene: Scene;

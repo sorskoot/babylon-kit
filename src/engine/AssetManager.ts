@@ -1,6 +1,6 @@
 import '@babylonjs/loaders/glTF';
 import {AbstractMesh, ImportMeshAsync, Scene, Texture} from '@babylonjs/core';
-import "./extensions/sorskoot-gltf-extension.ts";
+import "./extensions/sorskoot-gltf-extension";
 
 export interface LoadedModel {
     meshes: AbstractMesh[];

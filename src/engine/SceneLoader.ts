@@ -1,6 +1,6 @@
 import "@babylonjs/loaders/glTF";
-import { SceneLoader as BabylonSceneLoader, Scene, AbstractMesh, TransformNode } from "@babylonjs/core";
-import { GameObject } from "./GameObject.ts";
+import {Scene, AbstractMesh, TransformNode, ImportMeshAsync } from "@babylonjs/core";
+import { GameObject } from "./GameObject";
 
 export interface SceneLoadResult {
     meshes: AbstractMesh[];
@@ -33,7 +33,7 @@ export class SceneFileLoader {
         fileName: string,
         scene: Scene
     ): Promise<SceneLoadResult> {
-        const result = await BabylonSceneLoader.ImportMeshAsync("", rootUrl, fileName, scene);
+        const result = await ImportMeshAsync(`${rootUrl}/${fileName}`, scene);
         return {
             meshes: result.meshes,
             rootNodes: result.transformNodes,

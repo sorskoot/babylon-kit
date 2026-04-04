@@ -1,5 +1,5 @@
 import { Engine, Scene } from "@babylonjs/core";
-import { GameObject } from "./GameObject.ts";
+import { GameObject } from "./GameObject";
 import { InteractionManager } from "./InteractionManager";
 import { XRManager } from "./XRManager";
 import type { XRManagerOptions } from "./XRManager";
