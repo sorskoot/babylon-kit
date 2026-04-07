@@ -5,7 +5,7 @@ Blender plugin:
      ☐ Store ID, Tag(s) and more in global repositor to be able to query them and work with the exported data from code. 
 
 Bugs:
-    ☐ Fix canvas ssue with GUI
+    [x] Fix canvas issue with GUI
         colorpicker.js:177 Uncaught Error: Invalid engine. Unable to create a canvas.
 
 Ideas and features:
@@ -19,5 +19,13 @@ Ideas and features:
     ☐ Babylon Behaviors
     ☐ Reflection probes
     ☐ Global Illumination
+    ☐ LUTs
+    ☐ (East) Flipbook support
+    ☐ Easy way show text/popup in front of the VR camera.
+        Maybe with Babylon Behavior?
+
+Thoughts:
+    ☐ Create some easy, extensible way of generating levels.
+
 
 

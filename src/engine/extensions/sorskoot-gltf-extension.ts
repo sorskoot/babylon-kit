@@ -119,10 +119,14 @@ export class SorskootGLTFExtension implements IGLTFLoaderExtension {
         console.log(node);
         // Delegate actual node loading; intercept assign to attach metadata.
         return this._loader.loadNodeAsync(context, node, (babylonMesh) => {
+            console.log('loader', babylonMesh.metadata);
             babylonMesh.metadata = babylonMesh.metadata ?? {};
             // Store the full umbrella object so any combination of sub-groups
             // is available to game code without needing individual checks here.
             babylonMesh.metadata.sorskoot = extensionData satisfies ISorskootExtension;
+
+            // register metadata with the SorskootMetadataRepository
+
             assign(babylonMesh);
         });
     }
@@ -139,3 +143,4 @@ export class SorskootGLTFExtension implements IGLTFLoaderExtension {
 registerGLTFExtension(EXTENSION_NAME, false, async (loader) => {
     return new SorskootGLTFExtension(loader as GLTFLoader);
 });
+

@@ -1,6 +1,8 @@
-import '@babylonjs/loaders/glTF';
 import {AbstractMesh, ImportMeshAsync, Scene, Texture} from '@babylonjs/core';
+import "@babylonjs/loaders";
+import '@babylonjs/loaders/glTF';
 import "./extensions/sorskoot-gltf-extension";
+import {registerBuiltInLoaders} from '@babylonjs/loaders';
 
 export interface LoadedModel {
     meshes: AbstractMesh[];
@@ -10,6 +12,10 @@ export class AssetManager {
     private textures: Map<string, Texture> = new Map();
     private models: Map<string, LoadedModel> = new Map();
 
+    constructor() {
+        registerBuiltInLoaders();
+    }
+    
     public loadTexture(key: string, url: string, scene: Scene): Texture {
         const existing = this.textures.get(key);
         if (existing) return existing;
@@ -27,7 +33,7 @@ export class AssetManager {
         const existing = this.models.get(key);
         if (existing) return existing;
 
-        const result = await ImportMeshAsync(`${rootUrl}/${fileName}`, scene,
+        const result =  await ImportMeshAsync(`${rootUrl}/${fileName}`, scene,
             {
                 pluginOptions: {gltf: {}},
             });

@@ -1,5 +1,4 @@
-import { defineConfig } from 'vitest/config';
-import path from 'path';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
 
