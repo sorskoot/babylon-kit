@@ -1,4 +1,4 @@
-import { Engine, Scene } from "@babylonjs/core";
+import {Engine, Scene, WebXRDefaultExperience} from '@babylonjs/core';
 import { GameObject } from "./GameObject";
 import { InteractionManager } from "./InteractionManager";
 import { XRManager } from "./XRManager";
@@ -39,8 +39,8 @@ export abstract class GameScene {
      * Initialise WebXR for this scene. Call after setup() when camera and
      * environment are ready.
      */
-    public async initializeXR(options?: XRManagerOptions): Promise<void> {
-        await this.xrManager.initialize(options);
+    public async initializeXR(options?: XRManagerOptions): Promise<WebXRDefaultExperience> {
+        return await this.xrManager.initialize(options);
     }
 
     /** Register a GameObject in this scene. Calls onStart() automatically. */
