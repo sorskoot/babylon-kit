@@ -1,7 +1,8 @@
-import {AbstractMesh, ImportMeshAsync, Scene, Texture} from '@babylonjs/core';
+import {AbstractMesh, AssetContainer, Scene, Texture} from '@babylonjs/core';
 import "@babylonjs/loaders";
 import '@babylonjs/loaders/glTF';
 import "./extensions/sorskoot-gltf-extension";
+import {LoadAssetContainerAsync} from '@babylonjs/core/Loading/sceneLoader';
 import {registerBuiltInLoaders} from '@babylonjs/loaders';
 
 export interface LoadedModel {
@@ -10,7 +11,7 @@ export interface LoadedModel {
 
 export class AssetManager {
     private textures: Map<string, Texture> = new Map();
-    private models: Map<string, LoadedModel> = new Map();
+    private assets: Map<string, AssetContainer> = new Map();
 
     constructor() {
         registerBuiltInLoaders();
@@ -29,32 +30,34 @@ export class AssetManager {
         return this.textures.get(key);
     }
 
-    public async loadModel(key: string, rootUrl: string, fileName: string, scene: Scene): Promise<LoadedModel> {
-        const existing = this.models.get(key);
+    public async loadModel(key: string, rootUrl: string, fileName: string, scene: Scene): Promise<AssetContainer> {
+        const existing = this.assets.get(key);
         if (existing) return existing;
+        const options = {
+            pluginOptions: {
 
-        const result =  await ImportMeshAsync(`${rootUrl}/${fileName}`, scene,
-            {
-                pluginOptions: {
+                gltf: {
+                    extensionOptions: {
+                        SORSKOOT_BJS_ENGINE:{
+                            filename:fileName,
+                            key:key,
+                            id: crypto.randomUUID()
+                        },
+                    }
+                }},
 
-                    gltf: {
-                        extensionOptions: {
-                            SORSKOOT_BJS_ENGINE:{
-                                filename:fileName,
-                                key:key,
-                                id: crypto.randomUUID()
-                            },
-                        }
-                    }},
+        }
+        const container = await LoadAssetContainerAsync(`${rootUrl}/${fileName}`,scene, options);
 
-            });
-        const model: LoadedModel = {meshes: result.meshes};
-        this.models.set(key, model);
-        return model;
+        // const result =  await ImportMeshAsync(`${rootUrl}/${fileName}`, scene,options
+        //     );
+        //const model: LoadedModel = {meshes: container.meshes};
+        this.assets.set(key, container);
+        return container;
     }
 
-    public getModel(key: string): LoadedModel | undefined {
-        return this.models.get(key);
+    public getModel(key: string): AssetContainer | undefined {
+        return this.assets.get(key);
     }
 
     public dispose(): void {
@@ -63,11 +66,11 @@ export class AssetManager {
         }
         this.textures.clear();
 
-        for (const model of this.models.values()) {
+        for (const model of this.assets.values()) {
             for (const mesh of model.meshes) {
                 mesh.dispose();
             }
         }
-        this.models.clear();
+        this.assets.clear();
     }
 }

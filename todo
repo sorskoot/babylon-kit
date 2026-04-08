@@ -2,7 +2,8 @@
 
 This is the source code for the Sorskoot BJS Engine, a powerful and versatile game engine built on top of Babylon.js. The engine provides a wide range of features and tools to help developers create stunning 3D games and applications with ease.
 Blender plugin:
-     [] Store ID, Tag(s) and more in global repositor to be able to query them and work with the exported data from code.
+     [x] Store ID, Tag(s) and more in global repositor to be able to query them and work with the exported data from code.
+     [] add boolean to adding which needs to be enable for data to be included. Right now all nodes have data.
 
 Bugs:
     [x] Fix canvas issue with GUI
