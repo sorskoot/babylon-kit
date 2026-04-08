@@ -68,7 +68,7 @@ export class SceneFileLoader {
 
             const obj = factory(mesh.name, mesh, scene);
             if (obj) {
-                obj.mesh = mesh;
+                obj.node = mesh;
                 gameObjects.set(mesh.name, obj);
             }
         }

@@ -50,24 +50,80 @@ Models are cached by key. Subsequent calls with the same key skip the network re
 const cached = assetManager.getModel("floor_dirt"); // AssetContainer | undefined
 ```
 
-### Instantiating (cloning) models
+### Instantiating models
 
-Once a model is loaded you can create multiple independent clones with `instantiate`. Each clone is a full deep copy (not a GPU instance), so metadata, hierarchy and skeletons are preserved.
+Once a model is loaded you can spawn multiple copies with `instantiate`. By default, geometry meshes are **GPU-instanced** (one draw call per unique mesh + material pair) while nodes tagged with Sorskoot metadata are fully cloned so that `findByMetadataId` keeps working.
 
 ```ts
 // Load once — nothing is added to the scene yet
 await assetManager.loadModel("car", "/assets/models/", "car.glb", scene);
 
-// Spawn 3 clones at different positions
+// Spawn 3 copies at different positions
 const positions = [new Vector3(0, 0, 0), new Vector3(5, 0, 0), new Vector3(10, 0, 0)];
 for (let i = 0; i < 3; i++) {
     const entries = assetManager.instantiate("car", `car_${i}`);
-    // entries.rootNodes — cloned root nodes (already in the scene)
+    // entries.rootNodes — root nodes (already in the scene)
     entries.rootNodes[0].position = positions[i];
 }
 ```
 
-The optional second argument is a name prefix applied to every cloned node (`car_0_Body`, `car_0_Wheel`, …).
+The optional second argument is a name prefix applied to every node (`car_0_Body`, `car_0_Wheel`, …).
+
+#### Force full clones
+
+If you need every node to be fully independent (e.g. for per-clone vertex deformation), pass `{ forceClone: true }`:
+
+```ts
+const entries = assetManager.instantiate("car", `car_0`, { forceClone: true });
+```
+
+This produces more draw calls but gives each copy its own geometry and metadata.
+
+#### Thin instances (high-performance scattering)
+
+For very large numbers of identical objects (trees, tiles, rocks) use thin instancing. All copies are rendered in **one draw call per source mesh** with zero per-instance overhead.
+
+```ts
+await assetManager.loadModel("tree", "/assets/models/", "tree.glb", scene);
+
+const trees = assetManager.instantiate("tree", undefined, { thinInstance: true });
+
+// Add instances one-by-one
+trees.addInstance(Matrix.Translation(0, 0, 0));
+trees.addInstance(Matrix.Translation(5, 0, 3));
+trees.addInstance(Matrix.Translation(10, 0, -2));
+```
+
+For large batches, `setAll` is significantly faster because the entire GPU buffer is uploaded once:
+
+```ts
+const matrices = positions.map(p => Matrix.Translation(p.x, p.y, p.z));
+trees.setAll(matrices);
+```
+
+You can also update or batch-add instances efficiently:
+
+```ts
+// Batch-add without per-call GPU upload (refresh = false)
+for (const pos of positions) {
+    trees.addInstance(Matrix.Translation(pos.x, pos.y, pos.z), false);
+}
+trees.refreshBuffers();   // upload to GPU once
+trees.refreshBoundingInfo(); // update culling bounds
+
+// Update an existing instance's transform
+trees.setInstanceMatrix(0, Matrix.Translation(99, 0, 0));
+```
+
+> **Note:** Calling `instantiate` with `{ thinInstance: true }` for the same key returns the same `ThinInstanceResult`, so you can keep adding instances from different parts of your code.
+
+#### Choosing the right instancing mode
+
+| Mode | Option | Draw calls | Use case |
+|---|---|---|---|
+| GPU instances *(default)* | — | 1 per unique mesh+material | A handful of copies that need metadata / hierarchy |
+| Full clones | `{ forceClone: true }` | 1 per mesh per clone | Per-clone vertex deformation or full metadata |
+| Thin instances | `{ thinInstance: true }` | 1 per source mesh (total) | Hundreds / thousands of static copies |
 
 ### Finding nodes by Sorskoot metadata ID
 

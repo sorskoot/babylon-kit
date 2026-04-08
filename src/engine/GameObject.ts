@@ -1,8 +1,8 @@
-import { AbstractMesh, Scene, Vector3 } from "@babylonjs/core";
+import {Scene, TransformNode, Vector3} from '@babylonjs/core';
 
 export abstract class GameObject {
     public name: string;
-    public mesh: AbstractMesh | null = null;
+    public node: TransformNode | null = null;
     public tags: Set<string> = new Set();
 
     protected scene: Scene;
@@ -19,18 +19,18 @@ export abstract class GameObject {
 
     public set enabled(value: boolean) {
         this._enabled = value;
-        if (this.mesh) {
-            this.mesh.setEnabled(value);
+        if (this.node) {
+            this.node.setEnabled(value);
         }
     }
 
     public get position(): Vector3 {
-        return this.mesh?.position ?? Vector3.Zero();
+        return this.node?.position ?? Vector3.Zero();
     }
 
     public set position(value: Vector3) {
-        if (this.mesh) {
-            this.mesh.position = value;
+        if (this.node) {
+            this.node.position = value;
         }
     }
 
@@ -54,9 +54,9 @@ export abstract class GameObject {
     }
 
     public dispose(): void {
-        if (this.mesh) {
-            this.mesh.dispose();
-            this.mesh = null;
+        if (this.node) {
+            this.node.dispose();
+            this.node = null;
         }
     }
 }

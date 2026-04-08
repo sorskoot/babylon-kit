@@ -8,6 +8,7 @@ Blender plugin:
 Bugs:
     [x] Fix canvas issue with GUI
         colorpicker.js:177 Uncaught Error: Invalid engine. Unable to create a canvas.
+    [] Fix GPU intancing
 
 Ideas and features:
     [] Textured area lights

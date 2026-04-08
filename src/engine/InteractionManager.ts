@@ -1,4 +1,4 @@
-import { Scene, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
+import { AbstractMesh, Scene, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
 
 export class InteractionManager {
@@ -12,13 +12,15 @@ export class InteractionManager {
 
     /** Makes a GameObject clickable. Clicking it will call its onInteract(). */
     public enableInteraction(gameObject: GameObject): void {
-        if (!gameObject.mesh) return;
+        if (!gameObject.node || !(gameObject.node instanceof AbstractMesh)) return;
 
-        if (!gameObject.mesh.actionManager) {
-            gameObject.mesh.actionManager = new ActionManager(this.scene);
+        const mesh = gameObject.node;
+
+        if (!mesh.actionManager) {
+            mesh.actionManager = new ActionManager(this.scene);
         }
 
-        gameObject.mesh.actionManager.registerAction(
+        mesh.actionManager.registerAction(
             new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
                 gameObject.onInteract();
             })
@@ -43,7 +45,7 @@ export class InteractionManager {
 
         if (pickResult?.hit && pickResult.pickedMesh) {
             for (const obj of this.gameObjects.values()) {
-                if (obj.mesh === pickResult.pickedMesh || pickResult.pickedMesh.isDescendantOf(obj.mesh!)) {
+                if (obj.node === pickResult.pickedMesh || pickResult.pickedMesh.isDescendantOf(obj.node!)) {
                     return obj;
                 }
             }
