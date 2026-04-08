@@ -38,9 +38,30 @@ export abstract class GameScene {
     /**
      * Initialise WebXR for this scene. Call after setup() when camera and
      * environment are ready.
+     *
+     * @example Teleportation
+     * ```ts
+     * await this.initializeXR({
+     *     movement: {
+     *         mode: "teleportation",
+     *         floorMeshes: [ground],
+     *         timeToTeleport: 3000,
+     *     },
+     * });
+     * ```
+     *
+     * @example Smooth locomotion
+     * ```ts
+     * await this.initializeXR({
+     *     movement: {
+     *         mode: "locomotion",
+     *         movementSpeed: 0.1,
+     *     },
+     * });
+     * ```
      */
     public async initializeXR(options?: XRManagerOptions): Promise<WebXRDefaultExperience> {
-        return await this.xrManager.initialize(options);
+        return this.xrManager.initialize(options);
     }
 
     /** Register a GameObject in this scene. Calls onStart() automatically. */

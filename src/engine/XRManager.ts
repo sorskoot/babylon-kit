@@ -1,18 +1,42 @@
 import {
+    AbstractMesh,
     Scene,
     WebXRDefaultExperience,
     WebXRDefaultExperienceOptions,
+    WebXRFeatureName,
     WebXRState,
     WebXRInputSource,
     WebXRAbstractMotionController,
     Observable,
 } from "@babylonjs/core";
 
+/** Options for teleportation movement mode. */
+export interface TeleportationMovement {
+    mode: "teleportation";
+    /** Meshes the player can teleport onto. */
+    floorMeshes: AbstractMesh[];
+    /** Rendering group used for the teleportation indicator. */
+    renderingGroupId?: number;
+    /** Time (ms) to hold before teleport triggers. Default 3000. */
+    timeToTeleport?: number;
+    /** Custom mesh used as the teleportation target indicator. */
+    teleportationTargetMesh?: AbstractMesh;
+}
+
+/** Options for smooth locomotion movement mode. */
+export interface LocomotionMovement {
+    mode: "locomotion";
+    /** Movement direction follows the headset orientation. Default true. */
+    movementOrientationFollowsViewerPose?: boolean;
+    /** Movement direction follows the controller orientation. Default false. */
+    movementOrientationFollowsController?: boolean;
+    /** Movement speed in units/frame. Default 0.1. */
+    movementSpeed?: number;
+}
+
 export interface XRManagerOptions {
-    /** Floor meshes for teleportation. If empty, teleportation is disabled. */
-    floorMeshes?: { name: string }[];
-    /** Disable teleportation entirely. */
-    disableTeleportation?: boolean;
+    /** Choose either teleportation or smooth locomotion. */
+    movement?: TeleportationMovement | LocomotionMovement;
     /** Disable pointer selection. */
     disablePointerSelection?: boolean;
     /** Disable near interaction (grab). */
@@ -57,17 +81,48 @@ export class XRManager {
     /**
      * Initialise the WebXR default experience.
      * Call this after the scene's camera and environment are ready.
+     *
+     * Movement is configured via `options.movement`:
+     * - `{ mode: "teleportation", floorMeshes, ... }` enables teleportation.
+     * - `{ mode: "locomotion", movementSpeed, ... }` enables smooth locomotion.
+     * - If omitted, no movement feature is enabled.
      */
     public async initialize(options: XRManagerOptions = {}): Promise<WebXRDefaultExperience> {
         const expOptions: WebXRDefaultExperienceOptions = {
-            floorMeshes: options.floorMeshes as any,
-            disableTeleportation: options.disableTeleportation ?? true,
+            // Always disable built-in teleportation; we manage movement ourselves.
+            disableTeleportation: true,
             disablePointerSelection: options.disablePointerSelection ?? false,
             disableNearInteraction: options.disableNearInteraction ?? false,
             ...options.experienceOptions,
         };
 
         this.xr = await this.scene.createDefaultXRExperienceAsync(expOptions);
+
+        // --- movement feature ---------------------------------------------------
+        if (options.movement) {
+            const fm = this.xr.baseExperience.featuresManager;
+
+            if (options.movement.mode === "teleportation") {
+                const t = options.movement;
+                fm.enableFeature(WebXRFeatureName.TELEPORTATION, "stable", {
+                    xrInput: this.xr.input,
+                    floorMeshes: t.floorMeshes,
+                    renderingGroupId: t.renderingGroupId,
+                    timeToTeleport: t.timeToTeleport,
+                    teleportationTargetMesh: t.teleportationTargetMesh,
+                });
+            } else if (options.movement.mode === "locomotion") {
+                const l = options.movement;
+                fm.enableFeature(WebXRFeatureName.MOVEMENT, "latest", {
+                    xrInput: this.xr.input,
+                    movementOrientationFollowsViewerPose:
+                        l.movementOrientationFollowsViewerPose ?? true,
+                    movementOrientationFollowsController:
+                        l.movementOrientationFollowsController ?? false,
+                    movementSpeed: l.movementSpeed ?? 0.1,
+                });
+            }
+        }
 
         // Relay state changes
         this.xr.baseExperience.onStateChangedObservable.add((state) => {

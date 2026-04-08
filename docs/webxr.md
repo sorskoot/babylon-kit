@@ -12,28 +12,78 @@ Returns `true` if the browser supports `immersive-vr` WebXR sessions.
 
 ## Initializing XR
 
-Call `initializeXR()` on your `GameScene` after the camera and environment are ready (typically at the end of `setup()`):
-
-```ts
-if (await XRManager.isSupported()) {
-    await this.initializeXR({
-        floorMeshes: [ground],
-        disableTeleportation: false,
-    });
-}
-```
+Call `initializeXR()` on your `GameScene` after the camera and environment are ready (typically at the end of `setup()`). You choose **either** teleportation **or** smooth locomotion via the `movement` option — they are mutually exclusive.
 
 This adds a VR enter button to the page automatically.
+
+### Teleportation
+
+```ts
+await this.initializeXR({
+    movement: {
+        mode: "teleportation",
+        floorMeshes: [ground],
+        timeToTeleport: 3000,
+        // optional:
+        // renderingGroupId: 1,
+        // teleportationTargetMesh: myCustomMesh,
+    },
+});
+```
+
+### Smooth locomotion
+
+```ts
+await this.initializeXR({
+    movement: {
+        mode: "locomotion",
+        movementSpeed: 0.1,
+        // optional:
+        // movementOrientationFollowsViewerPose: true,
+        // movementOrientationFollowsController: false,
+    },
+});
+```
+
+### No movement
+
+If you omit `movement`, XR is initialised without any movement feature:
+
+```ts
+await this.initializeXR();
+```
 
 ### XRManagerOptions
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `floorMeshes` | `Mesh[]` | — | Meshes used for teleportation |
-| `disableTeleportation` | `boolean` | `true` | Disable teleportation |
+| `movement` | `TeleportationMovement \| LocomotionMovement` | — | Movement mode (see below) |
 | `disablePointerSelection` | `boolean` | `false` | Disable pointer/ray selection |
 | `disableNearInteraction` | `boolean` | `false` | Disable near grab interaction |
 | `experienceOptions` | `Partial<WebXRDefaultExperienceOptions>` | — | Additional options forwarded to BabylonJS |
+
+### TeleportationMovement
+
+Set `mode: "teleportation"` to enable point-and-teleport movement.
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `mode` | `"teleportation"` | — | **Required** discriminant |
+| `floorMeshes` | `AbstractMesh[]` | — | **Required** — meshes the player can teleport onto |
+| `renderingGroupId` | `number` | — | Rendering group for the teleportation indicator |
+| `timeToTeleport` | `number` | `3000` | Time in ms to hold before teleport triggers |
+| `teleportationTargetMesh` | `AbstractMesh` | — | Custom mesh for the teleportation target indicator |
+
+### LocomotionMovement
+
+Set `mode: "locomotion"` to enable thumbstick-based smooth movement.
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `mode` | `"locomotion"` | — | **Required** discriminant |
+| `movementSpeed` | `number` | `0.1` | Movement speed in units/frame |
+| `movementOrientationFollowsViewerPose` | `boolean` | `true` | Movement direction follows headset orientation |
+| `movementOrientationFollowsController` | `boolean` | `false` | Movement direction follows controller orientation |
 
 ## Controller Input
 
