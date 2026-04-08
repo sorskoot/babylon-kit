@@ -30,30 +30,60 @@ const cached = assetManager.getTexture("grass"); // Texture | undefined
 
 ### Loading models (.glb / .gltf)
 
+`loadModel` loads a model into an `AssetContainer` **without** adding it to the scene. This lets you inspect or clone the model before it becomes visible.
+
 ```ts
-const model = await assetManager.loadModel(
+const container = await assetManager.loadModel(
     "floor_dirt",           // cache key
     "/assets/models/",      // root URL
     "floor.glb",            // file name
     scene                   // BabylonJS Scene
 );
 
-// model.meshes is an array of AbstractMesh
-model.meshes.forEach(mesh => {
-    mesh.position.x = 5;
-});
+// Add all meshes / materials / etc. to the scene in one call
+container.addAllToScene();
 ```
 
-Models are also cached by key. Subsequent calls with the same key skip the network request.
+Models are cached by key. Subsequent calls with the same key skip the network request.
 
 ```ts
-const cached = assetManager.getModel("floor_dirt"); // LoadedModel | undefined
+const cached = assetManager.getModel("floor_dirt"); // AssetContainer | undefined
 ```
+
+### Instantiating (cloning) models
+
+Once a model is loaded you can create multiple independent clones with `instantiate`. Each clone is a full deep copy (not a GPU instance), so metadata, hierarchy and skeletons are preserved.
+
+```ts
+// Load once — nothing is added to the scene yet
+await assetManager.loadModel("car", "/assets/models/", "car.glb", scene);
+
+// Spawn 3 clones at different positions
+const positions = [new Vector3(0, 0, 0), new Vector3(5, 0, 0), new Vector3(10, 0, 0)];
+for (let i = 0; i < 3; i++) {
+    const entries = assetManager.instantiate("car", `car_${i}`);
+    // entries.rootNodes — cloned root nodes (already in the scene)
+    entries.rootNodes[0].position = positions[i];
+}
+```
+
+The optional second argument is a name prefix applied to every cloned node (`car_0_Body`, `car_0_Wheel`, …).
+
+### Finding nodes by Sorskoot metadata ID
+
+If your Blender model uses the Sorskoot add-on to tag nodes with a `generic.id`, you can look up a specific node inside an instantiated clone with `AssetManager.findByMetadataId`:
+
+```ts
+const entries = assetManager.instantiate("car", `car_0`);
+const racer = AssetManager.findByMetadataId(entries, "racer"); // TransformNode | null
+```
+
+This recursively searches the cloned hierarchy and returns the first node whose `metadata.sorskoot.generic.id` matches.
 
 ### Disposal
 
 ```ts
-assetManager.dispose(); // disposes all cached textures and models
+assetManager.dispose(); // disposes all cached textures, containers and tracked instances
 ```
 
 ## SceneFileLoader
