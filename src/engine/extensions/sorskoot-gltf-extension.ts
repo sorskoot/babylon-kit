@@ -1,4 +1,4 @@
-import { type Nullable, type TransformNode } from '@babylonjs/core';
+import {type Nullable, type TransformNode} from '@babylonjs/core';
 import {
     GLTFLoader,
     type IGLTFLoaderExtension,
@@ -6,45 +6,13 @@ import {
     type IScene,
     registerGLTFExtension,
 } from '@babylonjs/loaders/glTF/2.0';
+import {ISorskootExtension, ISorskootRootInfo, metadataRepository} from '../MetadataRepository';
 
 /**
  * Umbrella GLTF2 extension name written by the Blender add-on.
  * Must match EXTENSION_NAME in sorskootengine.py.
  */
-const EXTENSION_NAME = "SORSKOOT_BJS_ENGINE";
-
-// ---------------------------------------------------------------------------
-// Sub-group interfaces
-// Each interface mirrors one SorskootPropertyGroup subclass on the Python side.
-// ---------------------------------------------------------------------------
-
-/** Data written by SpawnerPropertyGroup. */
-export interface ISpawnerData {
-    /** Identifier of the enemy prefab to spawn (e.g. "robot"). */
-    enemy: string;
-    /** Number of enemies to spawn around this node. */
-    count: number;
-    /** Spawn radius in world units. */
-    radius: number;
-}
-
-/** Data written by ParticlesPropertyGroup. */
-export interface IParticlesData {
-    /** Asset path or key for the particle definition JSON. */
-    definition: string;
-}
-
-/**
- * Umbrella shape of the SORSKOOT_BJS_ENGINE extension block.
- * Each sub-key is optional – a node may carry any combination of groups.
- *
- * Add a new optional field here when a new SorskootPropertyGroup is added
- * on the Python side.
- */
-export interface ISorskootExtension {
-    spawner?:   ISpawnerData;
-    particles?: IParticlesData;
-}
+const EXTENSION_NAME = 'SORSKOOT_BJS_ENGINE';
 
 // ---------------------------------------------------------------------------
 // Loader extension
@@ -78,9 +46,19 @@ export class SorskootGLTFExtension implements IGLTFLoaderExtension {
     public order = 100;
 
     private _loader: GLTFLoader;
+    private _id: string;
+    private _filename: string;
+    private _key: string;
 
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        const loaderOptions = (this._loader.parent.extensionOptions ?? {})[EXTENSION_NAME] as ISorskootRootInfo | undefined;
+        if (!loaderOptions) {
+            throw new Error(`SorskootGLTFExtension: No root-level extension options found for ${EXTENSION_NAME}. Metadata entries will be registered without root info.`);
+        }
+        this._id = loaderOptions.id;
+        this._filename = loaderOptions.filename;
+        this._key = loaderOptions.key;
     }
 
     public dispose(): void {
@@ -116,16 +94,29 @@ export class SorskootGLTFExtension implements IGLTFLoaderExtension {
         if (!extensionData) {
             return null;
         }
-        console.log(node);
+
         // Delegate actual node loading; intercept assign to attach metadata.
         return this._loader.loadNodeAsync(context, node, (babylonMesh) => {
-            console.log('loader', babylonMesh.metadata);
+            // console.log('loader', babylonMesh);
+            // console.log('loader-node', node);
+
             babylonMesh.metadata = babylonMesh.metadata ?? {};
             // Store the full umbrella object so any combination of sub-groups
             // is available to game code without needing individual checks here.
             babylonMesh.metadata.sorskoot = extensionData satisfies ISorskootExtension;
 
             // register metadata with the SorskootMetadataRepository
+            metadataRepository.register({
+                id:       extensionData.generic?.id ?? babylonMesh.id,
+                name:     babylonMesh.name,
+                data:     extensionData satisfies ISorskootExtension,
+                mesh:     babylonMesh,
+                rootInfo: {
+                    id:this._id,
+                    filename:this._filename,
+                    key:this._key,
+                },
+            });
 
             assign(babylonMesh);
         });
@@ -138,6 +129,7 @@ export class SorskootGLTFExtension implements IGLTFLoaderExtension {
     public loadSceneAsync(_context: string, _scene: IScene): Nullable<Promise<void>> {
         return null;
     }
+
 }
 
 registerGLTFExtension(EXTENSION_NAME, false, async (loader) => {

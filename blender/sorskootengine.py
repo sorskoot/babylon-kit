@@ -138,6 +138,45 @@ class SorskootPropertyGroup:
 # Concrete property groups
 # ---------------------------------------------------------------------------
 
+class GenericPropertyGroup(SorskootPropertyGroup):
+    key = "generic"
+    label = "Generic"
+    def get_properties(self) -> dict:
+        # Getter and setter that keep a stored custom prop but otherwise fall back to object.name
+        def generic_id_get(self_obj):
+            # stored custom property key
+            return self_obj.get("_generic_id", "") or self_obj.name
+
+        def generic_id_set(self_obj, value):
+            if value:
+                self_obj["_generic_id"] = value
+            else:
+                # remove stored value so getter falls back to name again
+                if "_generic_id" in self_obj:
+                    del self_obj["_generic_id"]
+
+        return {
+            "generic_id": bpy.props.StringProperty(
+                name="Id",
+                get=generic_id_get,
+                set=generic_id_set,
+            ),
+            "generic_tags": bpy.props.StringProperty(
+                name="Tags",
+                default="",
+            )
+        }
+
+    def draw_panel(self, layout, obj):
+        layout.prop(obj, "generic_id")
+        layout.prop(obj, "generic_tags")
+
+    def export_data(self, blender_object) -> dict | None:
+        return {
+            "id": blender_object.generic_id,
+            "tags":  blender_object.generic_tags,
+        }
+
 class SpawnerPropertyGroup(SorskootPropertyGroup):
     """
     Property group for enemy-spawner settings.
@@ -238,6 +277,7 @@ class ParticlesPropertyGroup(SorskootPropertyGroup):
 # ---------------------------------------------------------------------------
 
 PROPERTY_GROUPS: list[SorskootPropertyGroup] = [
+    GenericPropertyGroup(),
     SpawnerPropertyGroup(),
     ParticlesPropertyGroup(),
 ]

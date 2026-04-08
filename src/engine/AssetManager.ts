@@ -35,7 +35,18 @@ export class AssetManager {
 
         const result =  await ImportMeshAsync(`${rootUrl}/${fileName}`, scene,
             {
-                pluginOptions: {gltf: {}},
+                pluginOptions: {
+
+                    gltf: {
+                        extensionOptions: {
+                            SORSKOOT_BJS_ENGINE:{
+                                filename:fileName,
+                                key:key,
+                                id: crypto.randomUUID()
+                            },
+                        }
+                    }},
+
             });
         const model: LoadedModel = {meshes: result.meshes};
         this.models.set(key, model);

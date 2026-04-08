@@ -2,30 +2,30 @@
 
 This is the source code for the Sorskoot BJS Engine, a powerful and versatile game engine built on top of Babylon.js. The engine provides a wide range of features and tools to help developers create stunning 3D games and applications with ease.
 Blender plugin:
-     ☐ Store ID, Tag(s) and more in global repositor to be able to query them and work with the exported data from code. 
+     [] Store ID, Tag(s) and more in global repositor to be able to query them and work with the exported data from code.
 
 Bugs:
     [x] Fix canvas issue with GUI
         colorpicker.js:177 Uncaught Error: Invalid engine. Unable to create a canvas.
 
 Ideas and features:
-    ☐ Textured area lights
-    ☐ Volumetric lighting
-    ☐ recastnav support
-    ☐ Physics support
-    ☐ Gaussian splat support
-    ☐ Frame Graph support
-    ☐ Animation Retargeting
-    ☐ Babylon Behaviors
-    ☐ Reflection probes
-    ☐ Global Illumination
-    ☐ LUTs
-    ☐ (East) Flipbook support
-    ☐ Easy way show text/popup in front of the VR camera.
+    [] Textured area lights
+    [] Volumetric lighting
+    [] recastnav support
+    [] Physics support
+    [] Gaussian splat support
+    [] Frame Graph support
+    [] Animation Retargeting
+    [] Babylon Behaviors
+    [] Reflection probes
+    [] Global Illumination
+    [] LUTs
+    [] (East) Flipbook support
+    [] Easy way show text/popup in front of the VR camera.
         Maybe with Babylon Behavior?
 
 Thoughts:
-    ☐ Create some easy, extensible way of generating levels.
+    [] Create some easy, extensible way of generating levels.
 
 
 

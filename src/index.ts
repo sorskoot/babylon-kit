@@ -10,3 +10,4 @@ export * from './engine/SceneManager';
 export * from './engine/UIManager';
 export * from './engine/XRManager';
 export * from './engine/extensions/sorskoot-gltf-extension';
+export * from './engine/MetadataRepository';
