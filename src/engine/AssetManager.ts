@@ -5,6 +5,10 @@ import "./extensions/sorskoot-gltf-extension";
 import {LoadAssetContainerAsync} from '@babylonjs/core/Loading/sceneLoader';
 import {registerBuiltInLoaders} from '@babylonjs/loaders';
 
+/**
+ * Controls how a loaded model is placed into the scene when calling
+ * {@link AssetManager.instantiate}.
+ */
 export interface InstantiateOptions {
     /**
      * When `true`, every node is fully cloned (preserves all metadata but
@@ -149,6 +153,14 @@ export class ThinInstanceResult {
     }
 }
 
+/**
+ * Loads, caches, and instantiates 3D model assets and textures.
+ *
+ * Typical workflow:
+ * 1. Call {@link loadModel} to fetch a `.glb` file into an {@link AssetContainer}.
+ * 2. Call {@link instantiate} to place one or more copies in the scene.
+ * 3. Call {@link dispose} when the scene tears down to free all GPU memory.
+ */
 export class AssetManager {
     private textures: Map<string, Texture> = new Map();
     private assets: Map<string, AssetContainer> = new Map();
@@ -160,6 +172,14 @@ export class AssetManager {
         registerBuiltInLoaders();
     }
 
+    /**
+     * Loads a texture from a URL and caches it under `key`.
+     * Returns the cached instance if the same key has already been loaded.
+     *
+     * @param key   Unique identifier for this texture.
+     * @param url   URL of the image to load.
+     * @param scene The scene that owns the texture.
+     */
     public loadTexture(key: string, url: string, scene: Scene): Texture {
         const existing = this.textures.get(key);
         if (existing) return existing;
@@ -169,10 +189,21 @@ export class AssetManager {
         return texture;
     }
 
+    /** Returns a previously loaded texture by key, or `undefined` if not found. */
     public getTexture(key: string): Texture | undefined {
         return this.textures.get(key);
     }
 
+    /**
+     * Asynchronously loads a `.glb`/`.gltf` model file into an
+     * {@link AssetContainer} and caches it under `key`.
+     * Returns the cached container if the same key has already been loaded.
+     *
+     * @param key       Unique identifier for this model.
+     * @param rootUrl   Base URL (folder) where the file is hosted.
+     * @param fileName  File name relative to `rootUrl`.
+     * @param scene     The scene the container will be associated with.
+     */
     public async loadModel(key: string, rootUrl: string, fileName: string, scene: Scene): Promise<AssetContainer> {
         const existing = this.assets.get(key);
         if (existing) return existing;
@@ -297,10 +328,12 @@ export class AssetManager {
         return null;
     }
 
+    /** Returns the raw {@link AssetContainer} for a loaded model key, or `undefined`. */
     public getModel(key: string): AssetContainer | undefined {
         return this.assets.get(key);
     }
 
+    /** Disposes all textures, model instances, thin instances, and asset containers. */
     public dispose(): void {
         for (const texture of this.textures.values()) {
             texture.dispose();

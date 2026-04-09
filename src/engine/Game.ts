@@ -5,16 +5,41 @@ import { UIManager } from "./UIManager";
 import { ParticleManager } from "./ParticleManager";
 import { AnimationManager } from "./AnimationManager";
 
+/**
+ * Root entry point for the game engine.
+ *
+ * `Game` owns the BabylonJS {@link Engine} and all top-level managers:
+ * {@link SceneManager}, {@link AssetManager}, {@link UIManager},
+ * {@link ParticleManager}, and {@link AnimationManager}.
+ *
+ * @example
+ * ```ts
+ * const game = new Game("renderCanvas");
+ * await game.sceneManager.addScene("main", new MainScene(game.sceneManager.getEngine()));
+ * await game.sceneManager.switchTo("main");
+ * game.start();
+ * ```
+ */
 export class Game {
     private engine: Engine;
     private canvas: HTMLCanvasElement;
 
+    /** Manages registration and switching of {@link GameScene} instances. */
     public sceneManager: SceneManager;
+    /** Loads, caches, and instantiates 3D model assets and textures. */
     public assetManager: AssetManager;
+    /** Creates and manages fullscreen 2D and in-world 3D UI panels. */
     public uiManager: UIManager;
+    /** Creates and manages persistent and one-shot particle systems. */
     public particleManager: ParticleManager;
+    /** Manages GLB animations, property tweens, and shader transitions. */
     public animationManager: AnimationManager;
 
+    /**
+     * Creates a new Game instance bound to a canvas element.
+     *
+     * @param canvasId - The `id` attribute of the `<canvas>` element in the DOM.
+     */
     constructor(canvasId: string) {
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         this.engine = new Engine(this.canvas, true);
@@ -29,14 +54,20 @@ export class Game {
         });
     }
 
+    /** Returns the underlying BabylonJS {@link Engine}. */
     public getEngine(): Engine {
         return this.engine;
     }
 
+    /** Returns the HTML canvas element the engine renders into. */
     public getCanvas(): HTMLCanvasElement {
         return this.canvas;
     }
 
+    /**
+     * Starts the engine render loop.
+     * The active scene (if any) is rendered every frame.
+     */
     public start(): void {
         this.engine.runRenderLoop(() => {
             const activeScene = this.sceneManager.getActiveScene();
@@ -46,6 +77,7 @@ export class Game {
         });
     }
 
+    /** Disposes all scenes and the BabylonJS engine, freeing all GPU resources. */
     public dispose(): void {
         this.sceneManager.dispose();
         this.engine.dispose();

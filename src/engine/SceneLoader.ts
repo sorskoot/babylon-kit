@@ -2,11 +2,16 @@ import "@babylonjs/loaders/glTF";
 import {Scene, AbstractMesh, TransformNode, ImportMeshAsync } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
 
+/** The raw result of a {@link SceneFileLoader.load} call. */
 export interface SceneLoadResult {
     meshes: AbstractMesh[];
     rootNodes: TransformNode[];
 }
 
+/**
+ * A factory function that maps a mesh name to a {@link GameObject}.
+ * Return a `GameObject` to register it in the scene, or `null` to skip the mesh.
+ */
 export type GameObjectFactory = (name: string, mesh: AbstractMesh, scene: Scene) => GameObject | null;
 
 /**

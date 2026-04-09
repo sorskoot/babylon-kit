@@ -1,10 +1,24 @@
 import { AbstractMesh, Scene, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
 
+/**
+ * Handles pointer/click interactions between the player and
+ * {@link GameObject} instances registered in a {@link GameScene}.
+ *
+ * Attach click handlers to individual objects with {@link enableInteraction},
+ * or enable all objects sharing a tag at once with
+ * {@link enableInteractionByTag}.  Use {@link pick} to perform a manual
+ * hit-test at the current pointer position.
+ */
 export class InteractionManager {
     private scene: Scene;
     private gameObjects: Map<string, GameObject>;
 
+    /**
+     * @param scene       The BabylonJS scene to attach action managers to.
+     * @param gameObjects Live map of registered game objects (kept in sync by
+     *                    the owning {@link GameScene}).
+     */
     constructor(scene: Scene, gameObjects: Map<string, GameObject>) {
         this.scene = scene;
         this.gameObjects = gameObjects;

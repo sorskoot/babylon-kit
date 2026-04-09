@@ -41,12 +41,17 @@ export interface ISorskootExtension {
     particles?: IParticlesData;
 }
 
+/** Root-level context written by the loader when a GLTF file is imported. */
 export interface ISorskootRootInfo{
     id: string;
     key: string;
     filename: string;
 }
 
+/**
+ * A single registered node entry combining its resolved mesh, the raw Sorskoot
+ * extension data, and the root file context it was loaded from.
+ */
 export type SorskootEntry = {
     id: string;
     name: string;
@@ -55,6 +60,11 @@ export type SorskootEntry = {
     rootInfo: ISorskootRootInfo;
 };
 
+/**
+ * Discriminator enum used to query all entries of a specific functional type
+ * (e.g. all spawner nodes or all particle nodes) without iterating the full
+ * repository.
+ */
 export enum SorskootEntryTypes {
     Spawner,
     Particles
@@ -76,6 +86,12 @@ export class MetadataRepository {
 
     private readonly entryTypes = new Map<SorskootEntryTypes, Set<string>>();
 
+    /**
+     * Register a loaded node entry.
+     * Tags from `entry.data.generic.tags` are indexed automatically.
+     *
+     * @param entry - The entry to register.
+     */
     register(entry: SorskootEntry): void {
         this.repository.set(entry.id, entry);
 
@@ -108,6 +124,11 @@ export class MetadataRepository {
         console.log(`Registered entry: ${entry.name}(${entry.id}) for ${entry.rootInfo.key}(${entry.rootInfo.id})`);
     }
 
+    /**
+     * Remove an entry and clean up all associated index entries.
+     *
+     * @param id - The entry ID that was used during {@link register}.
+     */
     unregister(id: string): void {
         const entry = this.repository.get(id);
         if (!entry) return;
@@ -168,6 +189,7 @@ export class MetadataRepository {
             .filter(Boolean);
     }
 
+    /** Returns all entries of the given functional type (e.g. all spawner nodes). */
     getByType(type: SorskootEntryTypes): SorskootEntry[] {
         const ids = this.entryTypes.get(type);
         if (!ids) return [];
@@ -177,4 +199,5 @@ export class MetadataRepository {
     }
 }
 
+/** Singleton instance of {@link MetadataRepository} shared across the engine. */
 export const metadataRepository = new MetadataRepository();

@@ -188,6 +188,7 @@ export class XRManager {
         await this.xr.baseExperience.exitXRAsync();
     }
 
+    /** Disposes the WebXR experience and clears all observables. */
     public dispose(): void {
         if (this.xr) {
             this.xr.dispose();

@@ -4,6 +4,26 @@ import { InteractionManager } from "./InteractionManager";
 import { XRManager } from "./XRManager";
 import type { XRManagerOptions } from "./XRManager";
 
+/**
+ * Abstract base class for every scene in the game.
+ *
+ * A `GameScene` owns a BabylonJS {@link Scene}, a registry of
+ * {@link GameObject} instances, an {@link InteractionManager}, and an
+ * {@link XRManager}.  Subclasses must implement {@link setup} to build the
+ * scene content and may override {@link update} for scene-level per-frame
+ * logic.
+ *
+ * @example
+ * ```ts
+ * class MainScene extends GameScene {
+ *     async setup() {
+ *         new ArcRotateCamera("cam", …, this.scene);
+ *         new HemisphericLight("light", …, this.scene);
+ *         this.addGameObject("player", new Player(this.scene));
+ *     }
+ * }
+ * ```
+ */
 export abstract class GameScene {
     protected scene: Scene;
     protected engine: Engine;
@@ -11,6 +31,11 @@ export abstract class GameScene {
     protected interactionManager: InteractionManager;
     protected xrManager: XRManager;
 
+    /**
+     * Creates a new GameScene and wires up the per-frame update loop.
+     *
+     * @param engine - The BabylonJS engine used to create the underlying Scene.
+     */
     constructor(engine: Engine) {
         this.engine = engine;
         this.scene = new Scene(engine);

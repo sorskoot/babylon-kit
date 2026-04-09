@@ -25,21 +25,55 @@ export interface UI3DOptions {
     billboard?: boolean;
 }
 
+/**
+ * Creates and manages BabylonJS GUI panels: a single fullscreen 2D overlay
+ * and any number of in-world 3D UI planes loaded from JSON files.
+ *
+ * @example Fullscreen HUD
+ * ```ts
+ * uiManager.createFullscreenUI("HUD", scene);
+ * uiManager.addText("Score: 0", { top: "20px" });
+ * ```
+ *
+ * @example In-world panel
+ * ```ts
+ * await uiManager.loadUI3D("sign", "/assets/ui/sign.json", scene, {
+ *     position: new Vector3(0, 2, 3),
+ *     planeWidth: 1.5,
+ * });
+ * ```
+ */
 export class UIManager {
     private ui: AdvancedDynamicTexture | null = null;
     private ui3DTextures: Map<string, { texture: AdvancedDynamicTexture; mesh: Mesh }> = new Map();
 
     // ── Fullscreen (2D overlay) UI ──────────────────────────────────
 
+    /**
+     * Creates a fullscreen 2D GUI overlay attached to the scene.
+     * Must be called before {@link addText} or {@link addButton}.
+     *
+     * @param name  Display name of the texture resource.
+     * @param scene The scene to attach the UI to.
+     * @returns The created {@link AdvancedDynamicTexture}.
+     */
     public createFullscreenUI(name: string, scene: Scene): AdvancedDynamicTexture {
         this.ui = AdvancedDynamicTexture.CreateFullscreenUI(name, true, scene);
         return this.ui;
     }
 
+    /** Returns the active fullscreen GUI texture, or `null` if not yet created. */
     public getUI(): AdvancedDynamicTexture | null {
         return this.ui;
     }
 
+    /**
+     * Adds a {@link TextBlock} to the fullscreen UI.
+     *
+     * @param text    The string to display.
+     * @param options Optional font size, color, and positioning.
+     * @throws If the fullscreen UI has not been created yet.
+     */
     public addText(
         text: string,
         options?: { fontSize?: number; color?: string; top?: string; left?: string }
@@ -58,6 +92,15 @@ export class UIManager {
         return textBlock;
     }
 
+    /**
+     * Adds a simple clickable {@link Button} to the fullscreen UI.
+     *
+     * @param name     Unique name for the button control.
+     * @param label    Text label rendered on the button.
+     * @param onClick  Callback invoked when the button is clicked.
+     * @param options  Optional size, position, color, and background.
+     * @throws If the fullscreen UI has not been created yet.
+     */
     public addButton(
         name: string,
         label: string,
@@ -162,6 +205,7 @@ export class UIManager {
 
     // ── Cleanup ─────────────────────────────────────────────────────
 
+    /** Disposes the fullscreen UI texture and all 3D UI panels. */
     public dispose(): void {
         if (this.ui) {
             this.ui.dispose();
