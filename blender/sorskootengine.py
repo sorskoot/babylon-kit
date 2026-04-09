@@ -156,6 +156,10 @@ class GenericPropertyGroup(SorskootPropertyGroup):
                     del self_obj["_generic_id"]
 
         return {
+            "generic_enabled": bpy.props.BoolProperty(
+                name="Enabled",
+                default=False,
+            ),
             "generic_id": bpy.props.StringProperty(
                 name="Id",
                 get=generic_id_get,
@@ -168,10 +172,15 @@ class GenericPropertyGroup(SorskootPropertyGroup):
         }
 
     def draw_panel(self, layout, obj):
-        layout.prop(obj, "generic_id")
-        layout.prop(obj, "generic_tags")
+        layout.prop(obj, "generic_enabled")
+        col = layout.column()
+        col.enabled = obj.generic_enabled
+        col.prop(obj, "generic_id")
+        col.prop(obj, "generic_tags")
 
     def export_data(self, blender_object) -> dict | None:
+        if not blender_object.generic_enabled:
+            return None
         return {
             "id": blender_object.generic_id,
             "tags":  blender_object.generic_tags,
@@ -305,6 +314,8 @@ def _make_sidebar_panel(group: SorskootPropertyGroup) -> type:
         if obj is None:
             layout.label(text="No active object.", icon='ERROR')
             return
+        if group.key != "generic":
+            layout.enabled = obj.generic_enabled
         group.draw_panel(layout, obj)
 
     cls_name = f"VIEW3D_PT_sorskoot_{group.key}"
