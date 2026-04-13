@@ -93,6 +93,10 @@ export class XRManager {
             disableTeleportation: true,
             disablePointerSelection: options.disablePointerSelection ?? false,
             disableNearInteraction: options.disableNearInteraction ?? false,
+            disableHandTracking: true,
+            inputOptions:{
+                    doNotLoadControllerMeshes:true
+            },
             ...options.experienceOptions,
         };
 
