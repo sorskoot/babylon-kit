@@ -30,6 +30,12 @@ export interface IParticlesData {
     definition: string;
 }
 
+export interface IDoorData {
+    reversed?: boolean;
+    max?: number;
+    locked?: boolean;
+}
+
 /**
  * Umbrella shape of the SORSKOOT_BJS_ENGINE extension block.
  * Each sub-key is optional – a node may carry any combination of groups.
@@ -41,6 +47,7 @@ export interface ISorskootExtension {
     generic?: IGenericData;
     spawner?: ISpawnerData;
     particles?: IParticlesData;
+    door?: IDoorData;
 }
 
 /** Root-level context written by the loader when a GLTF file is imported. */
@@ -69,7 +76,8 @@ export type SorskootEntry = {
  */
 export enum SorskootEntryTypes {
     Spawner,
-    Particles
+    Particles,
+    Door
 }
 
 /**
@@ -121,6 +129,13 @@ export class MetadataRepository implements Iterable<SorskootEntry> {
             this.entryTypes.get(SorskootEntryTypes.Particles)!.add(entry.id);
         }
 
+        if (entry.data.door) {
+            if (!this.entryTypes.has(SorskootEntryTypes.Door)) {
+                this.entryTypes.set(SorskootEntryTypes.Door, new Set());
+            }
+            this.entryTypes.get(SorskootEntryTypes.Door)!.add(entry.id);
+        }
+
         console.log(`Registered entry: ${entry.name}(${entry.id}) for ${entry.rootInfo.key}(${entry.rootInfo.id})`);
     }
 
@@ -154,6 +169,9 @@ export class MetadataRepository implements Iterable<SorskootEntry> {
         }
         if (entry.data.particles) {
             this.entryTypes.get(SorskootEntryTypes.Particles)?.delete(id);
+        }
+        if (entry.data.door) {
+            this.entryTypes.get(SorskootEntryTypes.Door)?.delete(id);
         }
 
         this.repository.delete(id);

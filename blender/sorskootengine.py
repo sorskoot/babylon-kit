@@ -245,7 +245,6 @@ class SpawnerPropertyGroup(SorskootPropertyGroup):
             "radius": blender_object.spawner_radius,
         }
 
-
 class ParticlesPropertyGroup(SorskootPropertyGroup):
     """
     Property group for particle-system settings.
@@ -283,6 +282,55 @@ class ParticlesPropertyGroup(SorskootPropertyGroup):
             "definition": blender_object.particles_definition,
         }
 
+class DoorPropertyGroup(SorskootPropertyGroup):
+    """
+    Property group for door settings.
+
+    Exported as ``SORSKOOT_BJS_ENGINE.door`` in the GLTF node extension.
+    """
+
+    key = "door"
+    label = "Door"
+
+    def get_properties(self) -> dict:
+        return {
+            "door_enabled": bpy.props.BoolProperty(
+                name="Door Enabled",
+                default=False,
+            ),
+            "door_reversed": bpy.props.BoolProperty(
+                name="Reversed",
+                default=False,
+            ),
+            "door_max": bpy.props.FloatProperty(
+                name="Max Open",
+                default=1.0,
+                min=0.0,
+                max=2.0
+            ),
+            "door_locked": bpy.props.BoolProperty(
+                name="Locked",
+                default=False,
+            ),
+        }
+
+    def draw_panel(self, layout, obj):
+        layout.prop(obj, "door_enabled")
+        col = layout.column()
+        col.enabled = obj.door_enabled
+        col.prop(obj, "door_reversed")
+        col.prop(obj, "door_max")
+        col.prop(obj, "door_locked")
+
+    def export_data(self, blender_object) -> dict | None:
+        if not blender_object.door_enabled:
+            return None
+        return {
+            "reversed": blender_object.door_reversed,
+            "max": blender_object.door_max,
+            "locked": blender_object.door_locked,
+        }
+
 
 # ---------------------------------------------------------------------------
 # Registry
@@ -295,6 +343,7 @@ PROPERTY_GROUPS: list[SorskootPropertyGroup] = [
     GenericPropertyGroup(),
     SpawnerPropertyGroup(),
     ParticlesPropertyGroup(),
+    DoorPropertyGroup(),
 ]
 
 
