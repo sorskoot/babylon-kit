@@ -168,6 +168,10 @@ class GenericPropertyGroup(SorskootPropertyGroup):
             "generic_tags": bpy.props.StringProperty(
                 name="Tags",
                 default="",
+            ),
+            "generic_collision": bpy.props.BoolProperty(
+                name="Collision",
+                default=False,
             )
         }
 
@@ -177,6 +181,7 @@ class GenericPropertyGroup(SorskootPropertyGroup):
         col.enabled = obj.generic_enabled
         col.prop(obj, "generic_id")
         col.prop(obj, "generic_tags")
+        col.prop(obj, "generic_collision")
 
     def export_data(self, blender_object) -> dict | None:
         if not blender_object.generic_enabled:
@@ -184,6 +189,7 @@ class GenericPropertyGroup(SorskootPropertyGroup):
         return {
             "id": blender_object.generic_id,
             "tags":  blender_object.generic_tags,
+            "collision": blender_object.generic_collision
         }
 
 class SpawnerPropertyGroup(SorskootPropertyGroup):

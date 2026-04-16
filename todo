@@ -10,6 +10,12 @@ Bugs:
         colorpicker.js:177 Uncaught Error: Invalid engine. Unable to create a canvas.
     [x] Fix GPU intancing
 
+Triggers:
+    [] basic system. Maybe make it so that a mesh can be exported from blender?
+    [] trigger on enter/exit
+    [] trigger on click
+    [] trigger on look at
+
 Ideas and features:
     [] Textured area lights
     [] Volumetric lighting
@@ -25,6 +31,8 @@ Ideas and features:
     [] (East) Flipbook support
     [] Easy way show text/popup in front of the VR camera.
         Maybe with Babylon Behavior?
+        [] Also some way of adding a text at a specific position.
+    [] Inspect objects VR and 3D.
 
 Thoughts:
     [] Create some easy, extensible way of generating levels.

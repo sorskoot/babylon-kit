@@ -10,6 +10,8 @@ export interface IGenericData {
     id: string;
     /** Comma separated list of tags. */
     tags: string;
+    /** Whether this node should be considered a "collision" object. */
+    collision: boolean;
 }
 
 /** Data written by SpawnerPropertyGroup. */
@@ -42,7 +44,7 @@ export interface ISorskootExtension {
 }
 
 /** Root-level context written by the loader when a GLTF file is imported. */
-export interface ISorskootRootInfo{
+export interface ISorskootRootInfo {
     id: string;
     key: string;
     filename: string;
@@ -76,14 +78,12 @@ export enum SorskootEntryTypes {
  * It stores metadata per glb/gltf file, and per mesh/node
  *
  */
-export class MetadataRepository {
+export class MetadataRepository implements Iterable<SorskootEntry> {
 
     /** Primary store: entry ID → SorskootEntry */
     private readonly repository = new Map<string, SorskootEntry>();
-
     /** Inverted index: tag → Set of entry IDs */
     private readonly tagIndex = new Map<string, Set<string>>();
-
     private readonly entryTypes = new Map<SorskootEntryTypes, Set<string>>();
 
     /**
@@ -107,14 +107,14 @@ export class MetadataRepository {
             }
         }
 
-        if (entry.data.spawner){
+        if (entry.data.spawner) {
             if (!this.entryTypes.has(SorskootEntryTypes.Spawner)) {
                 this.entryTypes.set(SorskootEntryTypes.Spawner, new Set());
             }
             this.entryTypes.get(SorskootEntryTypes.Spawner)!.add(entry.id);
         }
 
-        if (entry.data.particles){
+        if (entry.data.particles) {
             if (!this.entryTypes.has(SorskootEntryTypes.Particles)) {
                 this.entryTypes.set(SorskootEntryTypes.Particles, new Set());
             }
@@ -137,7 +137,7 @@ export class MetadataRepository {
         if (entry.data.generic?.tags) {
             const tags = entry.data.generic.tags.split(',');
             for (const raw of tags) {
-                const tag = raw.trim();
+                const tag = raw.trim().toLowerCase();
                 if (!tag) continue;
                 const bucket = this.tagIndex.get(tag);
                 if (bucket) {
@@ -166,7 +166,8 @@ export class MetadataRepository {
 
     /** Returns all entries that have the given tag. O(k) where k = number of matches. */
     getByTag(tag: string): SorskootEntry[] {
-        const ids = this.tagIndex.get(tag);
+        const key = tag.trim().toLowerCase();
+        const ids = this.tagIndex.get(key);
         if (!ids) return [];
         return Array.from(ids)
             .map(id => this.repository.get(id)!)
@@ -196,6 +197,10 @@ export class MetadataRepository {
         return Array.from(ids)
             .map(id => this.repository.get(id)!)
             .filter(Boolean);
+    }
+
+    [Symbol.iterator](): Iterator<SorskootEntry> {
+        return this.repository.values();
     }
 }
 
