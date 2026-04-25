@@ -12,6 +12,10 @@ export interface IGenericData {
     tags: string;
     /** Whether this node should be considered a "collision" object. */
     collision: boolean;
+    /** True if the object is considered a trigger and thus does not render. */
+    trigger: boolean;
+    /** True if the object is considered inspectable */
+    inspectable: boolean;
 }
 
 /** Data written by SpawnerPropertyGroup. */
@@ -77,7 +81,9 @@ export type SorskootEntry = {
 export enum SorskootEntryTypes {
     Spawner,
     Particles,
-    Door
+    Door,
+    Trigger,
+    Inspectable,
 }
 
 /**
@@ -93,6 +99,46 @@ export class MetadataRepository implements Iterable<SorskootEntry> {
     /** Inverted index: tag → Set of entry IDs */
     private readonly tagIndex = new Map<string, Set<string>>();
     private readonly entryTypes = new Map<SorskootEntryTypes, Set<string>>();
+
+    /**
+     * Checks if entry type is set, adds it if not
+     * @param type Type to check
+     * @private
+     */
+    private ensureTypeSet(type: SorskootEntryTypes): Set<string> {
+        if (!this.entryTypes.has(type)) {
+            this.entryTypes.set(type, new Set());
+        }
+        return this.entryTypes.get(type)!;
+    }
+
+    /**
+     * Adds the is if the condition is met
+     * @param condition Condition to check
+     * @param type Type to add
+     * @param id Entry ID to add
+     * @private
+     */
+    private addTypeIf(condition: boolean, type: SorskootEntryTypes, id: string): void {
+        if (condition) {
+            this.ensureTypeSet(type).add(id);
+        }
+    }
+
+    /**
+     * Removes the entry ID from the type bucket, and deletes the bucket if it's empty
+     * @param type Type to remove
+     * @param id Entry ID to remove
+     * @private
+     */
+    private removeType(type: SorskootEntryTypes, id: string): void {
+        const bucket = this.entryTypes.get(type);
+        if (!bucket) return;
+        bucket.delete(id);
+        if (bucket.size === 0) {
+            this.entryTypes.delete(type);
+        }
+    }
 
     /**
      * Register a loaded node entry.
@@ -115,26 +161,11 @@ export class MetadataRepository implements Iterable<SorskootEntry> {
             }
         }
 
-        if (entry.data.spawner) {
-            if (!this.entryTypes.has(SorskootEntryTypes.Spawner)) {
-                this.entryTypes.set(SorskootEntryTypes.Spawner, new Set());
-            }
-            this.entryTypes.get(SorskootEntryTypes.Spawner)!.add(entry.id);
-        }
-
-        if (entry.data.particles) {
-            if (!this.entryTypes.has(SorskootEntryTypes.Particles)) {
-                this.entryTypes.set(SorskootEntryTypes.Particles, new Set());
-            }
-            this.entryTypes.get(SorskootEntryTypes.Particles)!.add(entry.id);
-        }
-
-        if (entry.data.door) {
-            if (!this.entryTypes.has(SorskootEntryTypes.Door)) {
-                this.entryTypes.set(SorskootEntryTypes.Door, new Set());
-            }
-            this.entryTypes.get(SorskootEntryTypes.Door)!.add(entry.id);
-        }
+        this.addTypeIf(Boolean(entry.data.spawner), SorskootEntryTypes.Spawner, entry.id);
+        this.addTypeIf(Boolean(entry.data.particles), SorskootEntryTypes.Particles, entry.id);
+        this.addTypeIf(Boolean(entry.data.door), SorskootEntryTypes.Door, entry.id);
+        this.addTypeIf(Boolean(entry.data.generic?.trigger), SorskootEntryTypes.Trigger, entry.id);
+        this.addTypeIf(Boolean(entry.data.generic?.inspectable), SorskootEntryTypes.Inspectable, entry.id);
 
         console.log(`Registered entry: ${entry.name}(${entry.id}) for ${entry.rootInfo.key}(${entry.rootInfo.id})`);
     }
@@ -164,15 +195,11 @@ export class MetadataRepository implements Iterable<SorskootEntry> {
             }
         }
 
-        if (entry.data.spawner) {
-            this.entryTypes.get(SorskootEntryTypes.Spawner)?.delete(id);
-        }
-        if (entry.data.particles) {
-            this.entryTypes.get(SorskootEntryTypes.Particles)?.delete(id);
-        }
-        if (entry.data.door) {
-            this.entryTypes.get(SorskootEntryTypes.Door)?.delete(id);
-        }
+        if (entry.data.spawner) this.removeType(SorskootEntryTypes.Spawner, id);
+        if (entry.data.particles) this.removeType(SorskootEntryTypes.Particles, id);
+        if (entry.data.door) this.removeType(SorskootEntryTypes.Door, id);
+        if (entry.data.generic?.trigger) this.removeType(SorskootEntryTypes.Trigger, id);
+        if (entry.data.generic?.inspectable) this.removeType(SorskootEntryTypes.Inspectable, id);
 
         this.repository.delete(id);
     }
