@@ -141,6 +141,7 @@ class SorskootPropertyGroup:
 class GenericPropertyGroup(SorskootPropertyGroup):
     key = "generic"
     label = "Generic"
+
     def get_properties(self) -> dict:
         # Getter and setter that keep a stored custom prop but otherwise fall back to object.name
         def generic_id_get(self_obj):
@@ -172,6 +173,14 @@ class GenericPropertyGroup(SorskootPropertyGroup):
             "generic_collision": bpy.props.BoolProperty(
                 name="Collision",
                 default=False,
+            ),
+            "generic_trigger": bpy.props.BoolProperty(
+                name="Trigger",
+                default=False,
+            ),
+            "generic_inspectable": bpy.props.BoolProperty(
+                name="Inspectable",
+                default=False,
             )
         }
 
@@ -182,15 +191,20 @@ class GenericPropertyGroup(SorskootPropertyGroup):
         col.prop(obj, "generic_id")
         col.prop(obj, "generic_tags")
         col.prop(obj, "generic_collision")
+        col.prop(obj, "generic_trigger")
+        col.prop(obj, "generic_inspectable")
 
     def export_data(self, blender_object) -> dict | None:
         if not blender_object.generic_enabled:
             return None
         return {
             "id": blender_object.generic_id,
-            "tags":  blender_object.generic_tags,
-            "collision": blender_object.generic_collision
+            "tags": blender_object.generic_tags,
+            "collision": blender_object.generic_collision,
+            "trigger": blender_object.generic_trigger,
+            "inspectable": blender_object.generic_inspectable
         }
+
 
 class SpawnerPropertyGroup(SorskootPropertyGroup):
     """
@@ -240,10 +254,11 @@ class SpawnerPropertyGroup(SorskootPropertyGroup):
         if not blender_object.spawner_enabled:
             return None
         return {
-            "enemy":  blender_object.spawner_enemy,
-            "count":  blender_object.spawner_count,
+            "enemy": blender_object.spawner_enemy,
+            "count": blender_object.spawner_count,
             "radius": blender_object.spawner_radius,
         }
+
 
 class ParticlesPropertyGroup(SorskootPropertyGroup):
     """
@@ -281,6 +296,7 @@ class ParticlesPropertyGroup(SorskootPropertyGroup):
         return {
             "definition": blender_object.particles_definition,
         }
+
 
 class DoorPropertyGroup(SorskootPropertyGroup):
     """
@@ -363,6 +379,7 @@ def _make_sidebar_panel(group: SorskootPropertyGroup) -> type:
     :param group: The property group to create a panel for.
     :returns: A new ``bpy.types.Panel`` subclass ready to be registered.
     """
+
     def draw(self, context):
         layout = self.layout
         obj = context.object
@@ -379,13 +396,13 @@ def _make_sidebar_panel(group: SorskootPropertyGroup) -> type:
         (bpy.types.Panel,),
         {
             "__doc__": f"Sorskoot '{group.label}' settings in the 3D Viewport sidebar.",
-            "bl_label":     group.label,
-            "bl_idname":    cls_name,
+            "bl_label": group.label,
+            "bl_idname": cls_name,
             "bl_space_type": "VIEW_3D",
             "bl_region_type": "UI",
-            "bl_category":  "Sorskoot",
+            "bl_category": "Sorskoot",
             "bl_parent_id": "VIEW3D_PT_sorskoot",
-            "draw":         draw,
+            "draw": draw,
         },
     )
 
