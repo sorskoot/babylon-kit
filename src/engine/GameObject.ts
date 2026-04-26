@@ -1,4 +1,5 @@
 import {Scene, TransformNode, Vector3} from '@babylonjs/core';
+import type { InputSource } from "./InputManager";
 
 /**
  * Base class for all interactive objects in a {@link GameScene}.
@@ -81,8 +82,13 @@ export abstract class GameObject {
     /** Called every frame with the time since last frame in seconds. */
     public abstract onUpdate(deltaTime: number): void;
 
-    /** Called when this object is interacted with (clicked/picked). */
-    public onInteract(): void {
+    /**
+     * Called when this object is interacted with.
+     * @param source The input device that triggered the interaction
+     *               (`"mouse"`, `"keyboard"`, `"gamepad"`, or `"xr"`).
+     *               May be `undefined` when called programmatically.
+     */
+    public onInteract(_source?: InputSource): void {
         // Override in subclass to handle interaction
     }
 

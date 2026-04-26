@@ -116,6 +116,7 @@ Open the URL shown in the terminal (usually `http://localhost:5173`). You should
 - [Scene Management](./scenes.md) — creating and switching scenes
 - [Assets](./assets.md) — loading models, textures, and full Blender scenes
 - [Entities & Interaction](./entities.md) — GameObjects, enemies, pickups, click interaction
+- [Input](./input.md) — keyboard, mouse, gamepad, and XR controller input via named actions
 - [UI](./ui.md) — fullscreen overlays and 3D in-world panels
 - [Particles](./particles.md) — persistent systems and one-shot effects
 - [WebXR](./webxr.md) — VR support and controller input

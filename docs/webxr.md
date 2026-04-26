@@ -146,3 +146,8 @@ XR is disposed automatically when the `GameScene` is disposed. You can also call
 ```ts
 this.xrManager.dispose();
 ```
+
+## See also
+
+- [Input](./input.md) — routing XR trigger/squeeze through `InputManager` named actions
+

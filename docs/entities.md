@@ -28,9 +28,10 @@ export class Crate extends GameObject {
         }
     }
 
-    public onInteract(): void {
-        // Called when the player clicks this object
-        console.log("Crate opened!");
+    public onInteract(source?: InputSource): void {
+        // Called when the player interacts with this object.
+        // source is "mouse", "keyboard", "gamepad", or "xr".
+        console.log("Crate opened via", source);
     }
 }
 ```
@@ -42,7 +43,7 @@ export class Crate extends GameObject {
 | `constructor` | Object creation — set up properties, assign mesh, add tags |
 | `onStart()` | Called once by `GameScene.addGameObject()` |
 | `onUpdate(dt)` | Called every frame for enabled objects (dt in seconds) |
-| `onInteract()` | Called when the object is clicked (requires `InteractionManager`) |
+| `onInteract(source?)` | Called when the object is interacted with; `source` identifies the device (`"mouse"`, `"keyboard"`, `"gamepad"`, `"xr"`) |
 | `dispose()` | Disposes the mesh and cleans up |
 
 ### Properties
@@ -133,3 +134,21 @@ if (hit) {
 ```
 
 Performs a raycast from the current pointer position and returns the first `GameObject` hit, or `null`.
+
+### Routing keyboard, gamepad, and XR through InteractionManager
+
+Use `bindPickAction` to make any named `InputManager` action trigger a pick and
+call `onInteract(source)` on the hit object:
+
+```ts
+this.inputManager.bindAction("interact", {
+    keys: [Key.F],
+    gamepadButtons: [GamepadButton.A],
+    xrTrigger: true,
+});
+
+this.interactionManager.bindPickAction(this.inputManager, "interact");
+```
+
+See [Input](./input.md) for the full `InputManager` documentation.
+

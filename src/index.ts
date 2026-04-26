@@ -3,6 +3,7 @@ export * from './engine/AssetManager';
 export * from './engine/Game';
 export * from './engine/GameObject';
 export * from './engine/GameScene';
+export * from './engine/InputManager';
 export * from './engine/InteractionManager';
 export * from './engine/ParticleManager';
 export * from './engine/SceneLoader';

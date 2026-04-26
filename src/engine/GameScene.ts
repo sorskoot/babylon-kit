@@ -1,6 +1,7 @@
 import {Engine, Scene, WebXRDefaultExperience} from '@babylonjs/core';
 import { GameObject } from "./GameObject";
 import { InteractionManager } from "./InteractionManager";
+import { InputManager } from "./InputManager";
 import { XRManager } from "./XRManager";
 import type { XRManagerOptions } from "./XRManager";
 
@@ -29,6 +30,7 @@ export abstract class GameScene {
     protected engine: Engine;
     protected gameObjects: Map<string, GameObject> = new Map();
     protected interactionManager: InteractionManager;
+    protected inputManager: InputManager;
     protected xrManager: XRManager;
 
     /**
@@ -39,11 +41,13 @@ export abstract class GameScene {
     constructor(engine: Engine) {
         this.engine = engine;
         this.scene = new Scene(engine);
+        this.inputManager = new InputManager(this.scene);
         this.interactionManager = new InteractionManager(this.scene, this.gameObjects);
         this.xrManager = new XRManager(this.scene);
 
         this.scene.onBeforeRenderObservable.add(() => {
             const dt = this.engine.getDeltaTime() / 1000;
+            this.inputManager.update();
             this.update(dt);
         });
     }
@@ -54,6 +58,10 @@ export abstract class GameScene {
 
     public getInteractionManager(): InteractionManager {
         return this.interactionManager;
+    }
+
+    public getInputManager(): InputManager {
+        return this.inputManager;
     }
 
     public getXRManager(): XRManager {
@@ -140,6 +148,7 @@ export abstract class GameScene {
             obj.dispose();
         }
         this.gameObjects.clear();
+        this.inputManager.dispose();
         this.xrManager.dispose();
         this.scene.dispose();
     }
