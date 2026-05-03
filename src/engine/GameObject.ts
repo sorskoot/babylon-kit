@@ -1,5 +1,7 @@
-import {Scene, TransformNode, Vector3} from '@babylonjs/core';
-import type { InputSource } from "./InputManager";
+import {TransformNode, Vector3} from '@babylonjs/core';
+import {Game} from './Game';
+import {GameScene} from './GameScene';
+import type {InputSource} from './InputManager';
 
 /**
  * Base class for all interactive objects in a {@link GameScene}.
@@ -24,15 +26,19 @@ export abstract class GameObject {
     /** Set of string tags for group queries (see {@link GameScene.getGameObjectsByTag}). */
     public tags: Set<string> = new Set();
 
-    protected scene: Scene;
+    protected scene: GameScene;
+    protected game: Game;
+
     private _enabled: boolean = true;
 
     /**
      * @param name  Human-readable identifier for this object.
-     * @param scene The BabylonJS scene this object belongs to.
+     * @param game The BabylonJS Kit Game object
+     * @param scene The BabylonJS Kit scene this object belongs to.
      */
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, game: Game, scene: GameScene) {
         this.name = name;
+        this.game = game;
         this.scene = scene;
     }
 

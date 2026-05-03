@@ -1,5 +1,6 @@
 export * from './engine/AnimationManager';
 export * from './engine/AssetManager';
+export * from './engine/AudioManager';
 export * from './engine/Game';
 export * from './engine/GameObject';
 export * from './engine/GameScene';

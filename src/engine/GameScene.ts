@@ -1,4 +1,5 @@
 import {Engine, Scene, WebXRDefaultExperience} from '@babylonjs/core';
+import {Game} from './Game';
 import { GameObject } from "./GameObject";
 import { InteractionManager } from "./InteractionManager";
 import { InputManager } from "./InputManager";
@@ -26,6 +27,7 @@ import type { XRManagerOptions } from "./XRManager";
  * ```
  */
 export abstract class GameScene {
+    protected game: Game;
     protected scene: Scene;
     protected engine: Engine;
     protected gameObjects: Map<string, GameObject> = new Map();
@@ -38,8 +40,9 @@ export abstract class GameScene {
      *
      * @param engine - The BabylonJS engine used to create the underlying Scene.
      */
-    constructor(engine: Engine) {
+    constructor(engine: Engine, game:Game) {
         this.engine = engine;
+        this.game=game;
         this.scene = new Scene(engine);
         this.inputManager = new InputManager(this.scene);
         this.interactionManager = new InteractionManager(this.scene, this.gameObjects);
@@ -47,8 +50,8 @@ export abstract class GameScene {
 
         this.scene.onBeforeRenderObservable.add(() => {
             const dt = this.engine.getDeltaTime() / 1000;
-            this.inputManager.update();
             this.update(dt);
+            this.inputManager.update();
         });
     }
 

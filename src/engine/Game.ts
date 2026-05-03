@@ -4,13 +4,14 @@ import { AssetManager } from "./AssetManager";
 import { UIManager } from "./UIManager";
 import { ParticleManager } from "./ParticleManager";
 import { AnimationManager } from "./AnimationManager";
+import { AudioManager } from "./AudioManager";
 
 /**
  * Root entry point for the game engine.
  *
  * `Game` owns the BabylonJS {@link Engine} and all top-level managers:
  * {@link SceneManager}, {@link AssetManager}, {@link UIManager},
- * {@link ParticleManager}, and {@link AnimationManager}.
+ * {@link ParticleManager}, {@link AnimationManager}, and {@link AudioManager}.
  *
  * @example
  * ```ts
@@ -34,6 +35,8 @@ export class Game {
     public particleManager: ParticleManager;
     /** Manages GLB animations, property tweens, and shader transitions. */
     public animationManager: AnimationManager;
+    /** Manages music tracks and sound effects with independent volume/mute controls. */
+    public audioManager: AudioManager;
 
     /**
      * Creates a new Game instance bound to a canvas element.
@@ -48,6 +51,7 @@ export class Game {
         this.uiManager = new UIManager();
         this.particleManager = new ParticleManager();
         this.animationManager = new AnimationManager();
+        this.audioManager = new AudioManager();
 
         window.addEventListener("resize", () => {
             this.engine.resize();
@@ -77,8 +81,9 @@ export class Game {
         });
     }
 
-    /** Disposes all scenes and the BabylonJS engine, freeing all GPU resources. */
+    /** Disposes all scenes, the audio manager, and the BabylonJS engine, freeing all GPU resources. */
     public dispose(): void {
+        this.audioManager.dispose();
         this.sceneManager.dispose();
         this.engine.dispose();
     }
