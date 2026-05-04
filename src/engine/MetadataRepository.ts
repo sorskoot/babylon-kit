@@ -34,9 +34,16 @@ export interface IParticlesData {
     definition: string;
 }
 
+/**
+ * Data written by the door property group in the Blender add-on.
+ * Controls how a door node is animated when the player interacts with it.
+ */
 export interface IDoorData {
+    /** When `true`, the door swings in the opposite (negative) direction. */
     reversed?: boolean;
+    /** Maximum open angle as a fraction of 90°. `1` = fully open at 90°. Default 1. */
     max?: number;
+    /** When `true`, interaction does not open the door. */
     locked?: boolean;
 }
 
@@ -99,6 +106,8 @@ export class MetadataRepository implements Iterable<SorskootEntry> {
     /** Inverted index: tag → Set of entry IDs */
     private readonly tagIndex = new Map<string, Set<string>>();
     private readonly entryTypes = new Map<SorskootEntryTypes, Set<string>>();
+    /** `true` when at least one entry has been registered since the last metadata processing pass. */
+    public isDirty: boolean = false;
 
     /**
      * Checks if entry type is set, adds it if not
@@ -168,6 +177,7 @@ export class MetadataRepository implements Iterable<SorskootEntry> {
         this.addTypeIf(Boolean(entry.data.generic?.inspectable), SorskootEntryTypes.Inspectable, entry.id);
 
         console.log(`Registered entry: ${entry.name}(${entry.id}) for ${entry.rootInfo.key}(${entry.rootInfo.id})`);
+        this.isDirty = true;
     }
 
     /**
@@ -204,12 +214,21 @@ export class MetadataRepository implements Iterable<SorskootEntry> {
         this.repository.delete(id);
     }
 
-    /** O(1) lookup by entry ID. */
+    /** O(1) lookup by entry ID.
+     *
+     * @param id - The entry ID used during {@link register}.
+     * @returns The {@link SorskootEntry}, or `undefined` if not found.
+     */
     getById(id: string): SorskootEntry | undefined {
         return this.repository.get(id);
     }
 
-    /** Returns all entries that have the given tag. O(k) where k = number of matches. */
+    /**
+     * Returns all entries that have the given tag. O(k) where k = number of matches.
+     *
+     * @param tag - The tag string to search for (case-insensitive).
+     * @returns Array of matching {@link SorskootEntry} instances.
+     */
     getByTag(tag: string): SorskootEntry[] {
         const key = tag.trim().toLowerCase();
         const ids = this.tagIndex.get(key);
@@ -219,7 +238,12 @@ export class MetadataRepository implements Iterable<SorskootEntry> {
             .filter(Boolean);
     }
 
-    /** Returns all entries that have ALL of the given tags. */
+    /**
+     * Returns all entries that have ALL of the given tags.
+     *
+     * @param tags - Array of tag strings that must all be present on each returned entry.
+     * @returns Array of {@link SorskootEntry} instances matching every tag.
+     */
     getByTags(tags: string[]): SorskootEntry[] {
         if (tags.length === 0) return [];
         // Start from the smallest bucket to minimise iterations
@@ -235,7 +259,12 @@ export class MetadataRepository implements Iterable<SorskootEntry> {
             .filter(Boolean);
     }
 
-    /** Returns all entries of the given functional type (e.g. all spawner nodes). */
+    /**
+     * Returns all entries of the given functional type (e.g. all spawner nodes).
+     *
+     * @param type - The {@link SorskootEntryTypes} discriminator to filter by.
+     * @returns Array of {@link SorskootEntry} instances of the requested type.
+     */
     getByType(type: SorskootEntryTypes): SorskootEntry[] {
         const ids = this.entryTypes.get(type);
         if (!ids) return [];
@@ -244,6 +273,11 @@ export class MetadataRepository implements Iterable<SorskootEntry> {
             .filter(Boolean);
     }
 
+    /**
+     * Allows iterating all registered entries with a `for…of` loop.
+     *
+     * @returns An iterator over every {@link SorskootEntry} in the repository.
+     */
     [Symbol.iterator](): Iterator<SorskootEntry> {
         return this.repository.values();
     }

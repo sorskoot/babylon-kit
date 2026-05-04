@@ -14,6 +14,7 @@ import type { IAnimatable } from "@babylonjs/core";
 
 // ── Types & Interfaces ─────────────────────────────────────────────
 
+/** Options that control the behaviour of a {@link AnimationManager.tween} call. */
 export interface TweenOptions {
     /** Duration in milliseconds. */
     duration: number;
@@ -27,6 +28,7 @@ export interface TweenOptions {
     onComplete?: () => void;
 }
 
+/** Options that control the behaviour of a {@link AnimationManager.shaderTransition} or {@link AnimationManager.shaderMeshTransition} call. */
 export interface ShaderTransitionOptions {
     /** Duration in milliseconds. */
     duration: number;
@@ -38,6 +40,11 @@ export interface ShaderTransitionOptions {
     onComplete?: () => void;
 }
 
+/**
+ * Internal registry entry for a single animation tracked by {@link AnimationManager}.
+ * Combine the key, type discriminant, and the underlying BabylonJS animation handles
+ * so they can be stopped and disposed by key.
+ */
 export interface ManagedAnimation {
     key: string;
     type: "glb" | "tween" | "shader";

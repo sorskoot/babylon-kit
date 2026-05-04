@@ -39,7 +39,7 @@ export class SceneManager {
      */
     public async addScene(key: string, scene: GameScene): Promise<void> {
         this.scenes.set(key, scene);
-        await scene.setup();
+        await scene._internalSetup();
     }
 
     /**

@@ -62,15 +62,15 @@ const texture = await uiManager.loadUI3D("inventory", "/assets/ui/inventory.json
 
 ### UI3DOptions
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `position` | `Vector3` | `(0,0,0)` | World position of the UI plane |
-| `planeWidth` | `number` | `2` | Width of the plane mesh in world units |
-| `planeHeight` | `number` | `1` | Height of the plane mesh in world units |
-| `resolutionWidth` | `number` | `1024` | Texture resolution width in pixels |
-| `resolutionHeight` | `number` | `512` | Texture resolution height in pixels |
-| `renderOnTop` | `boolean` | `false` | Render on top of all other meshes (HUD-style) |
-| `billboard` | `boolean` | `false` | Always face the active camera |
+| Option             | Type      | Default   | Description                                   |
+|--------------------|-----------|-----------|-----------------------------------------------|
+| `position`         | `Vector3` | `(0,0,0)` | World position of the UI plane                |
+| `planeWidth`       | `number`  | `2`       | Width of the plane mesh in world units        |
+| `planeHeight`      | `number`  | `1`       | Height of the plane mesh in world units       |
+| `resolutionWidth`  | `number`  | `1024`    | Texture resolution width in pixels            |
+| `resolutionHeight` | `number`  | `512`     | Texture resolution height in pixels           |
+| `renderOnTop`      | `boolean` | `false`   | Render on top of all other meshes (HUD-style) |
+| `billboard`        | `boolean` | `false`   | Always face the active camera                 |
 
 ### Render on top
 
@@ -102,6 +102,47 @@ uiManager.disposeUI3D("inventory");
 ```ts
 uiManager.dispose(); // disposes fullscreen UI + all 3D UIs
 ```
+
+## Floating Text (Transient 3D Labels)
+
+`showFloatingText` creates a short-lived text label that floats in front of the
+active camera and auto-disposes after a configurable duration. It uses
+`FollowBehavior` so the label smoothly tracks the camera.
+
+```ts
+await uiManager.showFloatingText(
+    "Key obtained!",
+    scene,
+    3000,  // visible for 3 seconds
+    {
+        distance: 1.5,
+        width: 1.2,
+        height: 0.3,
+        fontSize: 36,
+        color: "white",
+        backgroundColor: "rgba(0,0,0,0.6)",
+        renderOnTop: true,
+    },
+);
+```
+
+### `showFloatingText` options
+
+| Option               | Type               | Default         | Description                           |
+|----------------------|--------------------|-----------------|---------------------------------------|
+| `distance`           | `number`           | `1`             | World units in front of the camera    |
+| `width`              | `number`           | `1`             | Plane width in world units            |
+| `height`             | `number`           | `0.25`          | Plane height in world units           |
+| `resolutionW`        | `number`           | `1024 × width`  | Texture pixel width                   |
+| `resolutionH`        | `number`           | `1024 × height` | Texture pixel height                  |
+| `fontSize`           | `number`           | `36`            | GUI font size                         |
+| `color`              | `string`           | `"white"`       | Text color                            |
+| `backgroundColor`    | `string`           | —               | Solid background color                |
+| `backgroundImageUrl` | `string`           | —               | Optional 9-slice background image URL |
+| `imageSlices`        | `number \| Slices` | —               | 9-slice pixel values                  |
+| `renderOnTop`        | `boolean`          | `false`         | Draw always on top of other meshes    |
+| `vertOffset`         | `number`           | `0`             | Vertical offset from camera center    |
+| `alpha`              | `number`           | `1.0`           | Background image opacity              |
 
 ## Creating GUI JSON Files
 

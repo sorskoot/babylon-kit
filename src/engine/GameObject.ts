@@ -1,4 +1,4 @@
-import {TransformNode, Vector3} from '@babylonjs/core';
+import {Scene, TransformNode, Vector3} from '@babylonjs/core';
 import {Game} from './Game';
 import {GameScene} from './GameScene';
 import type {InputSource} from './InputManager';
@@ -26,20 +26,16 @@ export abstract class GameObject {
     /** Set of string tags for group queries (see {@link GameScene.getGameObjectsByTag}). */
     public tags: Set<string> = new Set();
 
-    protected scene: GameScene;
-    protected game: Game;
-
+    protected gameScene: GameScene;
     private _enabled: boolean = true;
 
     /**
      * @param name  Human-readable identifier for this object.
-     * @param game The BabylonJS Kit Game object
      * @param scene The BabylonJS Kit scene this object belongs to.
      */
-    constructor(name: string, game: Game, scene: GameScene) {
+    protected constructor(name: string, scene: GameScene) {
         this.name = name;
-        this.game = game;
-        this.scene = scene;
+        this.gameScene = scene;
     }
 
     /**
@@ -72,6 +68,14 @@ export abstract class GameObject {
         }
     }
 
+    protected get scene(): Scene {
+        return this.gameScene.getScene();
+    }
+
+    protected get game(): Game {
+        return this.gameScene.getGame();
+    }
+
     /** Returns `true` if this object carries the given tag. */
     public hasTag(tag: string): boolean {
         return this.tags.has(tag);
@@ -90,7 +94,7 @@ export abstract class GameObject {
 
     /**
      * Called when this object is interacted with.
-     * @param source The input device that triggered the interaction
+     * @param _source The input device that triggered the interaction
      *               (`"mouse"`, `"keyboard"`, `"gamepad"`, or `"xr"`).
      *               May be `undefined` when called programmatically.
      */

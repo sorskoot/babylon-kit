@@ -27,24 +27,29 @@ Key packages:
 
 ```
 src/
-├── core/
+├── engine/
 │   ├── Game.ts              # Main entry point — owns engine & managers
 │   ├── SceneManager.ts      # Named scene registry with switching
 │   ├── GameScene.ts         # Abstract base class for scenes
 │   ├── AssetManager.ts      # Texture & model caching
+│   ├── AnimationManager.ts  # GLB animations, tweens, shader transitions
+│   ├── AudioManager.ts      # Music & SFX management
+│   ├── InputManager.ts      # Unified keyboard/mouse/gamepad/XR input
 │   ├── InteractionManager.ts# Click-to-interact & raycasting
 │   ├── ParticleManager.ts   # Persistent & one-shot particle systems
 │   ├── SceneLoader.ts       # Load full .glb scenes from Blender
+│   ├── SystemBase.ts        # Base class for custom game systems
+│   ├── UIManager.ts         # 2D overlay & 3D in-world UI
 │   └── XRManager.ts         # WebXR session & controller management
 ├── entities/
-│   ├── GameObject.ts        # Abstract entity base class
-│   ├── Enemy.ts             # Example: patrolling enemy
-│   └── Pickup.ts            # Example: collectible item
-├── scenes/
-│   └── MainScene.ts         # Example concrete scene
-├── ui/
-│   └── UIManager.ts         # 2D overlay & 3D in-world UI
-└── main.ts                  # Application bootstrap
+│   ├── DoorObject.ts        # Built-in: interactive animated door
+│   └── InspectObject.ts     # Built-in: inspectable object (pick up & examine)
+├── controllers/
+│   └── DoorAnimationController.ts  # Tween-based open/close animator
+├── utils/
+│   ├── Mathf.ts             # Math utilities (clamp, lerp, vectors …)
+│   └── rng.ts               # Seeded pseudo-random number generator
+└── index.ts                 # Public package entry-point
 public/
 └── assets/
     ├── models/              # .glb model files
@@ -66,10 +71,14 @@ public/
 
 ```ts
 // src/scenes/MyScene.ts
-import { FreeCamera, HemisphericLight, MeshBuilder, Vector3 } from "@babylonjs/core";
-import { GameScene } from "../core/GameScene";
+import { Engine, FreeCamera, HemisphericLight, MeshBuilder, Vector3 } from "@babylonjs/core";
+import { Game, GameScene } from "@sorskoot/babylon-kit";
 
 export class MyScene extends GameScene {
+    constructor(engine: Engine, game: Game) {
+        super(engine, game);
+    }
+
     public async setup(): Promise<void> {
         const camera = new FreeCamera("cam", new Vector3(0, 5, -10), this.scene);
         camera.setTarget(Vector3.Zero());
@@ -86,13 +95,13 @@ export class MyScene extends GameScene {
 
 ```ts
 // src/main.ts
-import { Game } from "./core/Game";
+import { Game } from "@sorskoot/babylon-kit";
 import { MyScene } from "./scenes/MyScene";
 
 async function init() {
     const game = new Game("gameCanvas");
 
-    const scene = new MyScene(game.getEngine());
+    const scene = new MyScene(game.getEngine(), game);
     await game.sceneManager.addScene("main", scene);
     await game.sceneManager.switchTo("main");
 
@@ -115,8 +124,11 @@ Open the URL shown in the terminal (usually `http://localhost:5173`). You should
 - [Architecture Overview](./architecture.md) — how the classes fit together
 - [Scene Management](./scenes.md) — creating and switching scenes
 - [Assets](./assets.md) — loading models, textures, and full Blender scenes
-- [Entities & Interaction](./entities.md) — GameObjects, enemies, pickups, click interaction
+- [Entities & Interaction](./entities.md) — GameObjects, click interaction
 - [Input](./input.md) — keyboard, mouse, gamepad, and XR controller input via named actions
 - [UI](./ui.md) — fullscreen overlays and 3D in-world panels
 - [Particles](./particles.md) — persistent systems and one-shot effects
+- [Animations](./animations.md) — GLB animations, tweens, shader transitions
+- [Audio](./audio.md) — music and sound effects
 - [WebXR](./webxr.md) — VR support and controller input
+- [Systems](./systems.md) — engine-wide per-frame subsystems

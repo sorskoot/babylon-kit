@@ -20,6 +20,10 @@ alongside `@babylonjs/core`, `@babylonjs/gui`, and `@babylonjs/loaders`.
 
 ## Documentation Requirements
 
+### General
+
+- All documentation must be in US English.
+
 ### TSDoc (inline API documentation)
 
 Every exported class, interface, enum, type alias, function, method, and property **must** have a TSDoc comment block (

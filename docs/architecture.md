@@ -10,12 +10,17 @@ Game
 ├── SceneManager
 │   └── GameScene (abstract)
 │       ├── Scene (BabylonJS)
+│       ├── InputManager
 │       ├── InteractionManager
 │       ├── XRManager
 │       └── Map<string, GameObject>
 ├── AssetManager
 ├── UIManager
-└── ParticleManager
+├── ParticleManager
+├── AnimationManager
+├── AudioManager
+└── Systems
+    └── SystemBase (abstract, user-defined)
 ```
 
 ## Game
@@ -34,6 +39,9 @@ const game = new Game("gameCanvas");
 | `assetManager` | `AssetManager` | Load and cache textures & models |
 | `uiManager` | `UIManager` | Fullscreen 2D and 3D in-world UI |
 | `particleManager` | `ParticleManager` | Persistent and one-shot particle systems |
+| `animationManager` | `AnimationManager` | GLB animations, tweens, and shader transitions |
+| `audioManager` | `AudioManager` | Music tracks and sound effects |
+| `systems` | `Systems` | Registry for custom `SystemBase` subsystems |
 
 **Methods:**
 
@@ -50,16 +58,23 @@ Each scene you create extends `GameScene`. It provides:
 
 - A BabylonJS `Scene` instance (`this.scene`)
 - A `Map<string, GameObject>` for entity management
-- An `InteractionManager` for click-to-interact
-- An `XRManager` for WebXR
+- An `InputManager` for unified keyboard/mouse/gamepad/XR input (`this.inputManager`)
+- An `InteractionManager` for click-to-interact (`this.interactionManager`)
+- An `XRManager` for WebXR (`this.xrManager`)
+- Access to all shared managers via `this.game`
 - An automatic update loop that calls `onUpdate()` on all enabled GameObjects every frame
 
 You implement the `setup()` method to build your scene:
 
 ```ts
 export class MyScene extends GameScene {
+    constructor(engine: Engine, game: Game) {
+        super(engine, game);
+    }
+
     public async setup(): Promise<void> {
         // Create cameras, lights, meshes, load assets, etc.
+        await this.game.assetManager.loadModel("level", "/assets/models/", "level.glb", this.scene);
     }
 }
 ```
@@ -84,19 +99,24 @@ main.ts
        ├─ new SceneManager(engine)
        ├─ new AssetManager()
        ├─ new UIManager()
-       └─ new ParticleManager()
+       ├─ new ParticleManager()
+       ├─ new AnimationManager()
+       ├─ new AudioManager()
+       └─ new Systems()
 
-  └─ new MyScene(engine, uiManager, assetManager, particleManager)
+  └─ new MyScene(engine, game)
        └─ setup()
             ├─ create camera, lights, meshes
-            ├─ assetManager.loadModel(...)
-            ├─ uiManager.loadUI3D(...)
-            ├─ particleManager.loadFromJSON(...)
-            ├─ new Enemy(...) → addGameObject(...)
+            ├─ this.game.assetManager.loadModel(...)
+            ├─ this.game.uiManager.loadUI3D(...)
+            ├─ this.game.particleManager.loadFromJSON(...)
+            ├─ this.game.audioManager.loadMusic(...)
+            ├─ new DoorObject(...) → addGameObject(...)
             └─ interactionManager.enableInteraction(...)
 
   └─ game.start()  →  render loop  →  activeScene.render()
                                          └─ update loop → gameObject.onUpdate(dt)
+                                                        → systems.update(dt)
 ```
 
 ## Lifecycle
@@ -104,5 +124,5 @@ main.ts
 1. **Construction** — `Game` creates the engine and managers.
 2. **Scene setup** — `addScene()` calls `scene.setup()` where you build the world.
 3. **Render loop** — `game.start()` begins rendering the active scene every frame.
-4. **Update loop** — Before each render, all enabled GameObjects receive `onUpdate(deltaTime)`.
+4. **Update loop** — Before each render, all enabled GameObjects receive `onUpdate(deltaTime)`, then custom systems are ticked.
 5. **Disposal** — `game.dispose()` tears down all scenes, managers, and the engine.

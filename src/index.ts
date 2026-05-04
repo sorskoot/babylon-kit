@@ -13,3 +13,7 @@ export * from './engine/UIManager';
 export * from './engine/XRManager';
 export * from './engine/extensions/sorskoot-gltf-extension';
 export * from './engine/MetadataRepository';
+export * from './engine/SystemBase';
+
+export * from './utils/rng';
+export * from './utils/Mathf';

@@ -1,10 +1,11 @@
-import { Engine } from "@babylonjs/core";
-import { SceneManager } from "./SceneManager";
-import { AssetManager } from "./AssetManager";
-import { UIManager } from "./UIManager";
-import { ParticleManager } from "./ParticleManager";
-import { AnimationManager } from "./AnimationManager";
-import { AudioManager } from "./AudioManager";
+import {Engine} from '@babylonjs/core';
+import {AnimationManager} from './AnimationManager';
+import {AssetManager} from './AssetManager';
+import {AudioManager} from './AudioManager';
+import {ParticleManager} from './ParticleManager';
+import {SceneManager} from './SceneManager';
+import {Systems} from './SystemBase';
+import {UIManager} from './UIManager';
 
 /**
  * Root entry point for the game engine.
@@ -22,9 +23,6 @@ import { AudioManager } from "./AudioManager";
  * ```
  */
 export class Game {
-    private engine: Engine;
-    private canvas: HTMLCanvasElement;
-
     /** Manages registration and switching of {@link GameScene} instances. */
     public sceneManager: SceneManager;
     /** Loads, caches, and instantiates 3D model assets and textures. */
@@ -37,6 +35,10 @@ export class Game {
     public animationManager: AnimationManager;
     /** Manages music tracks and sound effects with independent volume/mute controls. */
     public audioManager: AudioManager;
+    /** Registry for custom {@link SystemBase} subsystems that are ticked each frame. */
+    public readonly systems: Systems;
+    private readonly engine: Engine;
+    private readonly canvas: HTMLCanvasElement;
 
     /**
      * Creates a new Game instance bound to a canvas element.
@@ -52,8 +54,9 @@ export class Game {
         this.particleManager = new ParticleManager();
         this.animationManager = new AnimationManager();
         this.audioManager = new AudioManager();
+        this.systems = new Systems();
 
-        window.addEventListener("resize", () => {
+        window.addEventListener('resize', () => {
             this.engine.resize();
         });
     }

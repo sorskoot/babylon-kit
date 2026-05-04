@@ -14,44 +14,49 @@ Every animation is stored under a unique **key** and can be retrieved (`get`), c
 
 ## Setup
 
-The `AnimationManager` is created automatically by `Game` and exposed as `game.animationManager`. Pass it to your scene:
+The `AnimationManager` is created automatically by `Game` and exposed as `game.animationManager`.
+Inside a `GameScene` it is available via `this.game.animationManager`:
 
 ```ts
-const mainScene = new MainScene(
-    game.getEngine(),
-    game.uiManager,
-    game.assetManager,
-    game.particleManager,
-    game.animationManager,
-);
+// src/scenes/MyScene.ts
+export class MyScene extends GameScene {
+    public async setup(): Promise<void> {
+        const result = await this.game.assetManager.loadModel("hero", "/assets/models/", "hero.glb", this.scene);
+        this.game.animationManager.registerGLBAnimations("hero", result.animationGroups);
+        this.game.animationManager.playGLB("hero_Idle", true);
+    }
+}
 ```
 
 ---
 
 ## 1. GLB Animations
 
-When you load a `.glb` file via `SceneLoader.ImportMeshAsync`, the result includes an `animationGroups` array. Register them with the manager, then play by key.
+When you load a `.glb` file via `assetManager.loadModel`, the resulting `AssetContainer` includes animation groups. Register them with the manager, then play by key.
 
 ```ts
-import { SceneLoader } from "@babylonjs/core";
+import { AssetContainer } from "@babylonjs/core";
 
-const result = await SceneLoader.ImportMeshAsync("", "/assets/models/", "hero.glb", scene);
+public async setup(): Promise<void> {
+    const container = await this.game.assetManager.loadModel("hero", "/assets/models/", "hero.glb", this.scene);
+    const entries = this.game.assetManager.instantiate("hero");
 
-// Register all animation groups under the prefix "hero"
-// Creates keys like "hero_Idle", "hero_Run", "hero_Attack"
-animationManager.registerGLBAnimations("hero", result.animationGroups);
+    // Register all animation groups under the prefix "hero"
+    // Creates keys like "hero_Idle", "hero_Run", "hero_Attack"
+    this.game.animationManager.registerGLBAnimations("hero", container.animationGroups);
 
-// Play the idle animation (looping)
-animationManager.playGLB("hero_Idle", true);
+    // Play the idle animation (looping)
+    this.game.animationManager.playGLB("hero_Idle", true);
 
-// Later, switch to run with a 0.3 s blend-in
-animationManager.playGLB("hero_Run", true, 1, undefined, undefined, 0.3);
+    // Later, switch to run with a 0.3 s blend-in
+    this.game.animationManager.playGLB("hero_Run", true, 1, undefined, undefined, 0.3);
 
-// Or cross-fade from one to another over 0.5 s
-animationManager.crossFadeGLB("hero_Idle", "hero_Run", 0.5);
+    // Or cross-fade from one to another over 0.5 s
+    this.game.animationManager.crossFadeGLB("hero_Idle", "hero_Run", 0.5);
 
-// Stop
-animationManager.stopGLB("hero_Run");
+    // Stop
+    this.game.animationManager.stopGLB("hero_Run");
+}
 ```
 
 ### `playGLB` parameters
@@ -76,6 +81,7 @@ import { CubicEase, EasingFunction, Vector3 } from "@babylonjs/core";
 
 const ease = new CubicEase();
 ease.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
+const animationManager = this.game.animationManager;
 
 // Float tween — bob a mesh up and down
 animationManager.tween(
@@ -84,7 +90,7 @@ animationManager.tween(
     "position.y",
     0.75,
     2.5,
-    scene,
+    this.scene,
     { duration: 2000, loop: true, easingFunction: ease },
 );
 
@@ -95,7 +101,7 @@ animationManager.tween(
     "position",
     playerMesh.position.clone(),
     new Vector3(10, 0, 5),
-    scene,
+    this.scene,
     { duration: 1000, onComplete: () => console.log("arrived!") },
 );
 

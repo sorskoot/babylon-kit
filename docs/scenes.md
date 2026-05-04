@@ -2,13 +2,17 @@
 
 ## GameScene
 
-`GameScene` is the abstract base class for all scenes. Extend it and implement `setup()`:
+`GameScene` is the abstract base class for all scenes. Extend it, call `super(engine, game)` in the constructor, and implement `setup()`:
 
 ```ts
 import { FreeCamera, HemisphericLight, MeshBuilder, Vector3 } from "@babylonjs/core";
-import { GameScene } from "../core/GameScene";
+import { GameScene } from "@sorskoot/babylon-kit";
 
 export class LevelScene extends GameScene {
+    constructor(engine: Engine, game: Game) {
+        super(engine, game);
+    }
+
     public async setup(): Promise<void> {
         const camera = new FreeCamera("cam", new Vector3(0, 5, -10), this.scene);
         camera.setTarget(Vector3.Zero());
@@ -26,6 +30,8 @@ export class LevelScene extends GameScene {
 |-------------------|-------------|
 | `this.scene` | The BabylonJS `Scene` instance |
 | `this.engine` | The BabylonJS `Engine` |
+| `this.game` | The owning `Game` instance; gives access to all shared managers |
+| `this.inputManager` | Unified keyboard/mouse/gamepad/XR input (see [Input](./input.md)) |
 | `this.interactionManager` | Click-to-interact system (see [Entities & Interaction](./entities.md)) |
 | `this.xrManager` | WebXR manager (see [WebXR](./webxr.md)) |
 | `addGameObject(key, obj)` | Register a `GameObject`; calls `onStart()` automatically |
@@ -34,13 +40,32 @@ export class LevelScene extends GameScene {
 | `removeGameObject(key)` | Remove and dispose a `GameObject` |
 | `initializeXR(options?)` | Convenience method to start WebXR |
 
+### Accessing shared managers
+
+All shared managers are accessed through `this.game`:
+
+```ts
+public async setup(): Promise<void> {
+    // Load a model through the shared AssetManager
+    await this.game.assetManager.loadModel("floor", "/assets/models/", "floor.glb", this.scene);
+
+    // Play background music
+    await this.game.audioManager.loadMusic("theme", "/audio/theme.ogg");
+    this.game.audioManager.playMusic("theme");
+
+    // Load a particle system
+    await this.game.particleManager.loadFromJSON("fire", "/assets/particles/fire.json", this.scene, {
+        position: new Vector3(0, 0, 3),
+    });
+}
+```
+
 ### Custom update logic
 
 Override `update()` to add scene-level logic that runs every frame:
 
 ```ts
 protected update(deltaTime: number): void {
-    super.update(deltaTime); // updates all GameObjects
     // your per-frame logic here
 }
 ```
@@ -52,7 +77,7 @@ protected update(deltaTime: number): void {
 ### Adding scenes
 
 ```ts
-const level = new LevelScene(game.getEngine());
+const level = new LevelScene(game.getEngine(), game);
 await game.sceneManager.addScene("level1", level);
 ```
 
@@ -79,28 +104,4 @@ This disposes the scene and all its GameObjects. If the removed scene was active
 ```ts
 const babylonScene = game.sceneManager.getActiveScene();   // BabylonJS Scene
 const gameScene = game.sceneManager.getActiveGameScene();   // GameScene subclass
-```
-
-## Passing managers to scenes
-
-Scenes often need access to `AssetManager`, `UIManager`, or `ParticleManager`. Pass them through the constructor:
-
-```ts
-export class MyScene extends GameScene {
-    private assetManager: AssetManager;
-
-    constructor(engine: Engine, assetManager: AssetManager) {
-        super(engine);
-        this.assetManager = assetManager;
-    }
-
-    public async setup(): Promise<void> {
-        const model = await this.assetManager.loadModel(
-            "floor", "/assets/models/", "floor.glb", this.scene
-        );
-    }
-}
-
-// In main.ts:
-const scene = new MyScene(game.getEngine(), game.assetManager);
 ```
