@@ -28,7 +28,7 @@ class MainScene extends GameScene {
 
 // 2. Boot the game
 const game = new Game("renderCanvas");
-await game.sceneManager.addScene("main", new MainScene(game.sceneManager.getEngine()));
+await game.sceneManager.addScene("main", new MainScene(game.sceneManager.getEngine(), game));
 await game.sceneManager.switchTo("main");
 game.start(); // starts the render loop
 ```
