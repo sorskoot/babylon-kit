@@ -104,7 +104,6 @@ export class DoorObject extends GameObject {
 
         if (this.animator) {
             try {
-                // Await toggle so we block repeated interactions until complete
                 this.animator.toggle();
             } catch (e) {
                 console.warn(`[DoorObject] animator.toggle() failed for ${this.name}`, e);
