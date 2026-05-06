@@ -1,75 +1,114 @@
 # Scene Management
 
-Stack-based scene management with load/push/pop operations and async setup/teardown.
+## GameScene
 
-## Setup
+`GameScene` is the abstract base class for all scenes. Extend it, call `super(engine, game)` in the constructor, and implement `setup()`:
 
-```typescript
-import { SceneManager } from "./src/engine";
-import type { SceneDescriptor } from "./src/engine/core/types";
+```ts
+import { FreeCamera, HemisphericLight, MeshBuilder, Vector3 } from "@babylonjs/core";
+import { GameScene } from "@sorskoot/babylon-kit";
 
-const scenes = new SceneManager();
-scenes.init(game);
+export class LevelScene extends GameScene {
+    constructor(engine: Engine, game: Game) {
+        super(engine, game);
+    }
+
+    public async setup(): Promise<void> {
+        const camera = new FreeCamera("cam", new Vector3(0, 5, -10), this.scene);
+        camera.setTarget(Vector3.Zero());
+        camera.attachControl(true);
+
+        new HemisphericLight("light", new Vector3(0, 1, 0), this.scene);
+        MeshBuilder.CreateGround("ground", { width: 20, height: 20 }, this.scene);
+    }
+}
 ```
 
-## Defining Scenes
+### What GameScene gives you
 
-Scenes add and remove meshes / entities from the engine's managed Babylon.js
-scene. There is no need to create separate `Scene` instances.
+| Property / Method | Description |
+|-------------------|-------------|
+| `this.scene` | The BabylonJS `Scene` instance |
+| `this.engine` | The BabylonJS `Engine` |
+| `this.game` | The owning `Game` instance; gives access to all shared managers |
+| `this.inputManager` | Unified keyboard/mouse/gamepad/XR input (see [Input](./input.md)) |
+| `this.interactionManager` | Click-to-interact system (see [Entities & Interaction](./entities.md)) |
+| `this.xrManager` | WebXR manager (see [WebXR](./webxr.md)) |
+| `addGameObject(key, obj)` | Register a `GameObject`; calls `onStart()` automatically |
+| `getGameObject(key)` | Retrieve a registered `GameObject` by key |
+| `getGameObjectsByTag(tag)` | Get all GameObjects with a specific tag |
+| `removeGameObject(key)` | Remove and dispose a `GameObject` |
+| `initializeXR(options?)` | Convenience method to start WebXR |
 
-```typescript
-const menuScene: SceneDescriptor = {
-    name: "menu",
-    async setup(engine) {
-        const scene = engine.scene!;
-        // Add meshes, register entities and components
-        MeshBuilder.CreateSphere("menuSphere", { diameter: 2 }, scene);
-    },
-    async teardown(engine) {
-        const scene = engine.scene!;
-        // Remove scene-specific meshes
-        scene.getMeshByName("menuSphere")?.dispose();
-    },
-};
+### Accessing shared managers
 
-scenes.register(menuScene);
-scenes.register(gameScene);
+All shared managers are accessed through `this.game`:
+
+```ts
+public async setup(): Promise<void> {
+    // Load a model through the shared AssetManager
+    await this.game.assetManager.loadModel("floor", "/assets/models/", "floor.glb", this.scene);
+
+    // Initialize the audio engine once per app lifetime.
+    // By default, the browser will unlock the AudioContext on the first
+    // user interaction automatically. Pass `{ requireUnlock: true }` to
+    // show a "click to start" overlay instead (the promise won't resolve
+    // until the user clicks).
+    await this.game.audioManager.initialize();
+
+    // Load and play background music
+    await this.game.audioManager.loadMusic("theme", "/audio/theme.ogg");
+    this.game.audioManager.playMusic("theme");
+
+    // Load a particle system
+    await this.game.particleManager.loadFromJSON("fire", "/assets/particles/fire.json", this.scene, {
+        position: new Vector3(0, 0, 3),
+    });
+}
 ```
 
-## Loading Scenes
+### Custom update logic
 
-Replace the entire stack:
+Override `update()` to add scene-level logic that runs every frame:
 
-```typescript
-await scenes.load("menu");  // tears down current, sets up menu
-await scenes.load("game");  // tears down menu, sets up game
+```ts
+protected update(deltaTime: number): void {
+    // your per-frame logic here
+}
 ```
 
-## Scene Stack (Push/Pop)
+## SceneManager
 
-Layer scenes for pause menus, overlays, etc.:
+`SceneManager` is a registry of named scenes. It is created automatically by `Game`.
 
-```typescript
-await scenes.push("game");
-await scenes.push("pauseMenu");  // game stays in stack
+### Adding scenes
 
-scenes.stackDepth;     // 2
-scenes.currentScene;   // pauseMenu descriptor
-
-await scenes.pop();    // tears down pauseMenu, re-enters game
+```ts
+const level = new LevelScene(game.getEngine(), game);
+await game.sceneManager.addScene("level1", level);
 ```
 
-When popping, `teardown` is called on the top scene, then `setup` is called again on the new top.
+`addScene()` calls `setup()` on the scene, so by the time it resolves the scene is fully built.
 
-## Properties
+### Switching scenes
 
-```typescript
-scenes.currentScene;  // top of stack (or undefined)
-scenes.stackDepth;    // number of scenes in stack
+```ts
+await game.sceneManager.switchTo("level1");
 ```
 
-## Unregistering
+Only one scene is active at a time. The active scene is the one rendered in the game loop.
 
-```typescript
-scenes.unregister("menu");
+### Removing scenes
+
+```ts
+game.sceneManager.removeScene("level1");
+```
+
+This disposes the scene and all its GameObjects. If the removed scene was active, no scene will be rendered until you switch to another one.
+
+### Accessing the active scene
+
+```ts
+const babylonScene = game.sceneManager.getActiveScene();   // BabylonJS Scene
+const gameScene = game.sceneManager.getActiveGameScene();   // GameScene subclass
 ```

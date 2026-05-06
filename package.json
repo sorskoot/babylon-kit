@@ -1,14 +1,14 @@
 {
     "name": "@sorskoot/babylon-kit",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "A lightweight, modular game engine/tools layer built on top of Babylon.js",
     "type": "module",
-    "main": "dist/engine/index.js",
-    "types": "dist/engine/index.d.ts",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "exports": {
         ".": {
-            "types": "./dist/engine/index.d.ts",
-            "import": "./dist/engine/index.js"
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
         }
     },
     "files": [
@@ -36,16 +36,16 @@
         "sorskoot"
     ],
     "license": "MIT",
-    "dependencies": {
-        "@babylonjs/core": "^8.56.1",
-        "@babylonjs/gui": "^8.56.1",
-        "@babylonjs/loaders": "^8.56.1",
-        "@babylonjs/inspector": "^8.56.1"
+    "peerDependencies": {
+        "@babylonjs/core": "^9.x.x",
+        "@babylonjs/gui": "^9.x.x",
+        "@babylonjs/inspector": "^9.x.x",
+        "@babylonjs/loaders": "^9.x.x"
     },
     "devDependencies": {
-        "typescript": "^6.0.2",
-        "vite": "^8.0.1",
+        "@types/node": "^25.5.0",
         "typedoc": "^0.28.18",
-        "@types/node": "^25.5.0"
+        "typescript": "^6.0.2",
+        "vite": "^8.0.1"
     }
 }

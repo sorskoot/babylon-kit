@@ -1,14 +1,14 @@
 {
     "$schema": "https://typedoc.org/schema.json",
-    "entryPoints": ["src/engine/index.ts"],
+    "entryPoints": ["src/index.ts"],
     "out": "docs-api",
-    "name": "BJS Game Engine",
+    "name": "Sorskoot Babylon Kit",
     "readme": "README.md",
     "excludePrivate": true,
     "excludeInternal": true,
     "includeVersion": true,
     "navigationLinks": {
-        "GitHub": "https://github.com/example/bjs-game-engine"
+        "GitHub": "https://github.com/sorskoot/babylon-kit"
     },
     "plugin": [],
     "tsconfig": "tsconfig.json"
