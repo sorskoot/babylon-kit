@@ -17,7 +17,7 @@ import {UIManager} from './UIManager';
  * @example
  * ```ts
  * const game = new Game("renderCanvas");
- * await game.sceneManager.addScene("main", new MainScene(game.sceneManager.getEngine()));
+ * await game.sceneManager.addScene("main", new MainScene(game.getEngine(), game));
  * await game.sceneManager.switchTo("main");
  * game.start();
  * ```
