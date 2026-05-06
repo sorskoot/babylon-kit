@@ -1,51 +1,61 @@
 {
-    "name": "@sorskoot/babylon-kit",
-    "version": "0.2.4",
-    "description": "A lightweight, modular game engine/tools layer built on top of Babylon.js",
-    "type": "module",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
-    "exports": {
-        ".": {
-            "types": "./dist/index.d.ts",
-            "import": "./dist/index.js"
-        }
-    },
-    "files": [
-        "dist",
-        "README.md"
-    ],
-    "scripts": {
-        "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
-        "build": "npm run clean && tsc",
-        "build:watch": "npm run clean && tsc --watch",
-        "prepack": "npm run build",
-        "pack:check": "npm pack --dry-run",
-        "pack:tarball": "npm pack",
-        "prepublishOnly": "npm run build",
-        "dev": "vite",
-        "lint": "eslint src/",
-        "docs": "typedoc"
-    },
-    "keywords": [
-        "babylonjs",
-        "game-engine",
-        "ecs",
-        "3d",
-        "webgl",
-        "sorskoot"
-    ],
-    "license": "MIT",
-    "peerDependencies": {
-        "@babylonjs/core": "^9.x.x",
-        "@babylonjs/gui": "^9.x.x",
-        "@babylonjs/inspector": "^9.x.x",
-        "@babylonjs/loaders": "^9.x.x"
-    },
-    "devDependencies": {
-        "@types/node": "^25.5.0",
-        "typedoc": "^0.28.18",
-        "typescript": "^6.0.2",
-        "vite": "^8.0.1"
+  "name": "@sorskoot/babylon-kit",
+  "version": "0.2.4",
+  "description": "A lightweight, modular game engine/tools layer built on top of Babylon.js",
+  "type": "module",
+  "access": "public",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": "Timmy Kokke / Sorskoot",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sorskoot/babylon-kit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sorskoot/babylon-kit/issues"
+  },
+  "homepage": "https://timmykokke.com",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc",
+    "build:watch": "npm run clean && tsc --watch",
+    "prepack": "npm run build",
+    "pack:check": "npm pack --dry-run",
+    "pack:tarball": "npm pack",
+    "prepublishOnly": "npm run build",
+    "dev": "vite",
+    "lint": "eslint src/",
+    "docs": "typedoc"
+  },
+  "keywords": [
+    "babylonjs",
+    "game-engine",
+    "ecs",
+    "3d",
+    "webgl",
+    "sorskoot"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@babylonjs/core": "^9.x.x",
+    "@babylonjs/gui": "^9.x.x",
+    "@babylonjs/inspector": "^9.x.x",
+    "@babylonjs/loaders": "^9.x.x"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typedoc": "^0.28.18",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.1"
+  }
 }
