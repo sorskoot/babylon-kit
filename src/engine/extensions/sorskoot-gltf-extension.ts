@@ -54,7 +54,7 @@ export class SorskootGLTFExtension implements IGLTFLoaderExtension {
         this._loader = loader;
         const loaderOptions = (this._loader.parent.extensionOptions ?? {})[EXTENSION_NAME] as ISorskootRootInfo | undefined;
         if (!loaderOptions) {
-            throw new Error(`SorskootGLTFExtension: No root-level extension options found for ${EXTENSION_NAME}. Metadata entries will be registered without root info.`);
+            throw new Error(`SorskootGLTFExtension: No root-level extension options found for ${EXTENSION_NAME}.`);
         }
         this._id = loaderOptions.id;
         this._filename = loaderOptions.filename;
@@ -112,9 +112,9 @@ export class SorskootGLTFExtension implements IGLTFLoaderExtension {
                 data:     extensionData satisfies ISorskootExtension,
                 mesh:     babylonMesh,
                 rootInfo: {
-                    id:this._id,
-                    filename:this._filename,
-                    key:this._key,
+                    id:       this._id,
+                    filename: this._filename,
+                    key:      this._key,
                 },
             });
 
