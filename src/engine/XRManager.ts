@@ -89,15 +89,15 @@ export class XRManager {
      */
     public async initialize(options: XRManagerOptions = {}): Promise<WebXRDefaultExperience> {
         const expOptions: WebXRDefaultExperienceOptions = {
-            // Always disable built-in teleportation; we manage movement ourselves.
-            disableTeleportation: true,
             disablePointerSelection: options.disablePointerSelection ?? false,
             disableNearInteraction: options.disableNearInteraction ?? false,
             disableHandTracking: true,
             inputOptions:{
-                    doNotLoadControllerMeshes:true
+                doNotLoadControllerMeshes:true
             },
             ...options.experienceOptions,
+            // Always disable built-in teleportation; we manage movement ourselves.
+            disableTeleportation: true,
         };
 
         this.xr = await this.scene.createDefaultXRExperienceAsync(expOptions);
