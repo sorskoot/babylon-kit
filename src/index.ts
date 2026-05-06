@@ -15,5 +15,11 @@ export * from './engine/extensions/sorskoot-gltf-extension';
 export * from './engine/MetadataRepository';
 export * from './engine/SystemBase';
 
+export * from './controllers/DoorAnimationController'
+export * from './controllers/IOpenCloseAnimator'
+
+export * from './entities/InspectObject'
+export * from './entities/DoorObject'
+
 export * from './utils/rng';
 export * from './utils/Mathf';
