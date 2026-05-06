@@ -93,7 +93,7 @@ Lock and unlock programmatically:
 
 ```ts
 doorObj.lock();    // closes the door and prevents further interaction
-doorObj.unload();  // unlocks and resets the animator
+doorObj.unlock();  // unlocks and resets the animator
 ```
 
 ### InspectObject
