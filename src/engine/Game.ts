@@ -44,9 +44,14 @@ export class Game {
      * Creates a new Game instance bound to a canvas element.
      *
      * @param canvasId - The `id` attribute of the `<canvas>` element in the DOM.
+     * @throws {Error} When no element with the given `canvasId` exists in the DOM.
      */
     constructor(canvasId: string) {
-        this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+        const canvasElement = document.getElementById(canvasId);
+        if (!canvasElement) {
+            throw new Error(`Canvas element with id '${canvasId}' not found in the DOM.`);
+        }
+        this.canvas = canvasElement as HTMLCanvasElement;
         this.engine = new Engine(this.canvas, true);
         this.sceneManager = new SceneManager(this.engine);
         this.assetManager = new AssetManager();
