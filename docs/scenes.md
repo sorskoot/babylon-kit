@@ -50,9 +50,10 @@ public async setup(): Promise<void> {
     await this.game.assetManager.loadModel("floor", "/assets/models/", "floor.glb", this.scene);
 
     // Initialize the audio engine once per app lifetime.
-    // By default, the browser will resume audio automatically on the first
-    // user interaction. Pass `{ requireUnlock: true }` to show a "click to
-    // start" overlay instead (the promise won't resolve until the user clicks).
+    // By default, the browser will unlock the AudioContext on the first
+    // user interaction automatically. Pass `{ requireUnlock: true }` to
+    // show a "click to start" overlay instead (the promise won't resolve
+    // until the user clicks).
     await this.game.audioManager.initialize();
 
     // Load and play background music
