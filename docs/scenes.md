@@ -49,7 +49,13 @@ public async setup(): Promise<void> {
     // Load a model through the shared AssetManager
     await this.game.assetManager.loadModel("floor", "/assets/models/", "floor.glb", this.scene);
 
-    // Play background music
+    // Initialize the audio engine once per app lifetime.
+    // By default, the browser will resume audio automatically on the first
+    // user interaction. Pass `{ requireUnlock: true }` to show a "click to
+    // start" overlay instead (the promise won't resolve until the user clicks).
+    await this.game.audioManager.initialize();
+
+    // Load and play background music
     await this.game.audioManager.loadMusic("theme", "/audio/theme.ogg");
     this.game.audioManager.playMusic("theme");
 
