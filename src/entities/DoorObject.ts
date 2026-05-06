@@ -71,7 +71,10 @@ export class DoorObject extends GameObject {
         this.reversed = options?.reversed ?? false;
         this.locked = options?.locked ?? false;
         this.max = options?.max ?? 1.0;
-        this.node!.rotation = new Vector3(0, 0, 0);
+
+        if (!this.node!.rotation) {
+            this.node!.rotation = new Vector3(0, 0, 0);
+        }
 
         const openAngle = (this.reversed ? -1 : 1) * this.max * Math.PI / 2;
         const durationMs = this.speed * 1000;
